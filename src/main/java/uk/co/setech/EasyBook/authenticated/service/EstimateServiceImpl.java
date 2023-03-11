@@ -45,6 +45,7 @@ public class EstimateServiceImpl implements EstimateService{
 
         var estimate = dtoToEstimate(estimateDto, Estimate.builder().build());
 
+        estimate.setUser(user);
         estimate = estimateRepo.save(estimate);
 
         return estimateToDto(estimate, estimateDto);
@@ -53,7 +54,11 @@ public class EstimateServiceImpl implements EstimateService{
 
     @Override
     public EstimateDto updateEstimate(EstimateDto estimateDto) {
-        var estimate = estimateRepo.findById(estimateDto.getId())
+        var user = userRepo.findByEmail(getUserDetails().getEmail())
+                .orElseThrow(()->
+                        new UsernameNotFoundException(String.format(USER_NOT_FOUND, getUserDetails().getEmail())));
+
+        var estimate = estimateRepo.findByIdAndUser(estimateDto.getId(), user)
                 .orElseThrow(()-> new IllegalStateException("Invalid invoice number"));
 
         estimate = dtoToEstimate(estimateDto, estimate);
@@ -65,16 +70,22 @@ public class EstimateServiceImpl implements EstimateService{
 
     @Override
     public List<EstimateDto> getAllEstimate() {
+        var user = userRepo.findByEmail(getUserDetails().getEmail())
+                .orElseThrow(()->
+                        new UsernameNotFoundException(String.format(USER_NOT_FOUND, getUserDetails().getEmail())));
 
-        return estimateRepo.findAll().stream()
+        return estimateRepo.findByUser(user).stream()
             .map(estimate -> estimateToDto(estimate, EstimateDto.builder().build()))
             .collect(Collectors.toList());
     }
 
     @Override
     public EstimateDto getEstimateById(String invoiceId) {
+        var user = userRepo.findByEmail(getUserDetails().getEmail())
+                .orElseThrow(()->
+                        new UsernameNotFoundException(String.format(USER_NOT_FOUND, getUserDetails().getEmail())));
 
-        return estimateRepo.findById(Long.valueOf(invoiceId))
+        return estimateRepo.findByIdAndUser(Long.valueOf(invoiceId), user)
                 .map(estimate ->
                     estimateToDto(estimate, EstimateDto.builder().build())
                 )
@@ -83,7 +94,11 @@ public class EstimateServiceImpl implements EstimateService{
 
     @Override
     public GeneralResponse deleteEstimateById(String invoiceId) {
-        invoiceRepo.deleteById(Long.valueOf(invoiceId));
+        var user = userRepo.findByEmail(getUserDetails().getEmail())
+                .orElseThrow(()->
+                        new UsernameNotFoundException(String.format(USER_NOT_FOUND, getUserDetails().getEmail())));
+
+        invoiceRepo.deleteByIdAndUser(Long.valueOf(invoiceId), user);
 
         return GeneralResponse.builder()
                 .message("Estimate deleted")

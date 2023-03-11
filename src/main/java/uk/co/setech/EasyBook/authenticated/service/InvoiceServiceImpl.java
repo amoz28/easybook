@@ -43,7 +43,7 @@ public class InvoiceServiceImpl implements InvoiceService{
         invoiceDto.setCustomer(customer);
 
         var invoice = dtoToInvoice(invoiceDto, Invoice.builder().build());
-
+        invoice.setUser(user);
         invoice = invoiceRepo.save(invoice);
 
         return invoiceToDto(invoice, invoiceDto);
@@ -51,7 +51,11 @@ public class InvoiceServiceImpl implements InvoiceService{
 
     @Override
     public InvoiceDto updateInvoice(InvoiceDto invoiceDto) {
-        var invoice = invoiceRepo.findById(invoiceDto.getId())
+        var user = userRepo.findByEmail(getUserDetails().getEmail())
+                .orElseThrow(()->
+                        new UsernameNotFoundException(String.format(USER_NOT_FOUND, getUserDetails().getEmail())));
+
+        var invoice = invoiceRepo.findByIdAndUser(invoiceDto.getId(), user)
                 .orElseThrow(()-> new IllegalStateException("Invalid invoice number"));
 
         invoice = dtoToInvoice(invoiceDto, invoice);
@@ -63,16 +67,22 @@ public class InvoiceServiceImpl implements InvoiceService{
 
     @Override
     public List<InvoiceDto> getAllInvoice() {
+        var user = userRepo.findByEmail(getUserDetails().getEmail())
+                .orElseThrow(()->
+                        new UsernameNotFoundException(String.format(USER_NOT_FOUND, getUserDetails().getEmail())));
 
-        return invoiceRepo.findAll().stream()
+        return invoiceRepo.findByUser(user).stream()
             .map(invoice -> invoiceToDto(invoice, InvoiceDto.builder().build()))
             .collect(Collectors.toList());
     }
 
     @Override
     public InvoiceDto getInvoiceById(String invoiceId) {
+        var user = userRepo.findByEmail(getUserDetails().getEmail())
+                .orElseThrow(()->
+                        new UsernameNotFoundException(String.format(USER_NOT_FOUND, getUserDetails().getEmail())));
 
-        return invoiceRepo.findById(Long.valueOf(invoiceId))
+        return invoiceRepo.findByIdAndUser(Long.valueOf(invoiceId), user)
                 .map(invoice ->
                     invoiceToDto(invoice, InvoiceDto.builder().build())
                 )
@@ -81,7 +91,11 @@ public class InvoiceServiceImpl implements InvoiceService{
 
     @Override
     public GeneralResponse deleteInvoiceById(String invoiceId) {
-        invoiceRepo.deleteById(Long.valueOf(invoiceId));
+        var user = userRepo.findByEmail(getUserDetails().getEmail())
+                .orElseThrow(()->
+                        new UsernameNotFoundException(String.format(USER_NOT_FOUND, getUserDetails().getEmail())));
+
+        invoiceRepo.deleteByIdAndUser(Long.valueOf(invoiceId), user);
 
         return GeneralResponse.builder()
                 .message("Invoice deleted")
