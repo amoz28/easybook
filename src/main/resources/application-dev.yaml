@@ -10,9 +10,8 @@ spring:
     properties:
       hibernate:
         format_sql: true
-    database: POSTGRESQL
-    database-platform: org.hibernate.dialect.PostgreSQLDialect
-
+    database: mysql
+    database-platform: org.hibernate.dialect.MySQLDialect
 
   mail:
     host: smtp.gmail.com
