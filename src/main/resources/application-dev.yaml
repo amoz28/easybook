@@ -1,8 +1,8 @@
 spring:
   datasource:
-    url: postgres://rcafhpxexrdimy:ec2-54-157-79-121.compute-1.amazonaws.com:5432/d5bg8dbli5j01q
-    username: rcafhpxexrdimy
-    password: a773f1767d5b0e5e890e67cd89c275d1b7791ee3fa71062b389177fc6e9f0638
+    url: jdbc:mysql://us-cdbr-east-06.cleardb.net:3306/heroku_1eb973b559fad20
+    username: b2958561bbea94
+    password: 88a5c940
   jpa:
     hibernate:
       ddl-auto: update
