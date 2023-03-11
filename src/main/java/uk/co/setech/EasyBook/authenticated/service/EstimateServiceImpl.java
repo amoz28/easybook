@@ -8,97 +8,99 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 import uk.co.setech.EasyBook.auth.GeneralResponse;
 import uk.co.setech.EasyBook.authenticated.controller.UserDto;
+import uk.co.setech.EasyBook.authenticated.dto.EstimateDto;
 import uk.co.setech.EasyBook.authenticated.dto.InvoiceDto;
+import uk.co.setech.EasyBook.authenticated.model.Estimate;
 import uk.co.setech.EasyBook.authenticated.model.Invoice;
 import uk.co.setech.EasyBook.authenticated.repository.CustomerRepo;
+import uk.co.setech.EasyBook.authenticated.repository.EstimateRepo;
 import uk.co.setech.EasyBook.authenticated.repository.InvoiceRepo;
 import uk.co.setech.EasyBook.repository.UserRepo;
 import uk.co.setech.EasyBook.utils.ExcludeNullValues;
 
-import java.beans.PropertyDescriptor;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
-public class InvoiceServiceImpl implements InvoiceService{
+public class EstimateServiceImpl implements EstimateService{
 
     private final InvoiceRepo invoiceRepo;
 
     private final CustomerRepo customerRepo;
+    private final EstimateRepo estimateRepo;
     private final ExcludeNullValues excludeNullValues;
-    private static final String USER_NOT_FOUND = "User with email: %s Not Found";
     private final UserRepo userRepo;
+    private static final String USER_NOT_FOUND = "User with email: %s Not Found";
 
     @Override
-    public InvoiceDto createInvoice(InvoiceDto invoiceDto) {
+    public EstimateDto createEstimate(EstimateDto estimateDto) {
         var user = userRepo.findByEmail(getUserDetails().getEmail())
                 .orElseThrow(()->
                         new UsernameNotFoundException(String.format(USER_NOT_FOUND, getUserDetails().getEmail())));
 
-        var customer = customerRepo.findByEmailAndUser(invoiceDto.getCustomerEmail(), user)
+        var customer = customerRepo.findByEmailAndUser(estimateDto.getCustomerEmail(), user)
                 .orElseThrow(()-> new IllegalArgumentException("Customer does not exist"));
-        invoiceDto.setCustomer(customer);
+        estimateDto.setCustomer(customer);
 
-        var invoice = dtoToInvoice(invoiceDto, Invoice.builder().build());
+        var estimate = dtoToEstimate(estimateDto, Estimate.builder().build());
 
-        invoice = invoiceRepo.save(invoice);
+        estimate = estimateRepo.save(estimate);
 
-        return invoiceToDto(invoice, invoiceDto);
+        return estimateToDto(estimate, estimateDto);
     }
 
+
     @Override
-    public InvoiceDto updateInvoice(InvoiceDto invoiceDto) {
-        var invoice = invoiceRepo.findById(invoiceDto.getId())
+    public EstimateDto updateEstimate(EstimateDto estimateDto) {
+        var estimate = estimateRepo.findById(estimateDto.getId())
                 .orElseThrow(()-> new IllegalStateException("Invalid invoice number"));
 
-        invoice = dtoToInvoice(invoiceDto, invoice);
+        estimate = dtoToEstimate(estimateDto, estimate);
 
-        var savedInvoice = invoiceRepo.save(invoice);
+        var savedInvoice = estimateRepo.save(estimate);
 
-        return invoiceToDto(savedInvoice, invoiceDto);
+        return estimateToDto(savedInvoice, estimateDto);
     }
 
     @Override
-    public List<InvoiceDto> getAllInvoice() {
+    public List<EstimateDto> getAllEstimate() {
 
-        return invoiceRepo.findAll().stream()
-            .map(invoice -> invoiceToDto(invoice, InvoiceDto.builder().build()))
+        return estimateRepo.findAll().stream()
+            .map(estimate -> estimateToDto(estimate, EstimateDto.builder().build()))
             .collect(Collectors.toList());
     }
 
     @Override
-    public InvoiceDto getInvoiceById(String invoiceId) {
+    public EstimateDto getEstimateById(String invoiceId) {
 
-        return invoiceRepo.findById(Long.valueOf(invoiceId))
-                .map(invoice ->
-                    invoiceToDto(invoice, InvoiceDto.builder().build())
+        return estimateRepo.findById(Long.valueOf(invoiceId))
+                .map(estimate ->
+                    estimateToDto(estimate, EstimateDto.builder().build())
                 )
                 .orElseThrow(()-> new IllegalArgumentException("Invoice Id not found"));
     }
 
     @Override
-    public GeneralResponse deleteInvoiceById(String invoiceId) {
+    public GeneralResponse deleteEstimateById(String invoiceId) {
         invoiceRepo.deleteById(Long.valueOf(invoiceId));
 
         return GeneralResponse.builder()
-                .message("Invoice deleted")
+                .message("Estimate deleted")
                 .build();
     }
 
 
-    private InvoiceDto invoiceToDto(Invoice invoice, InvoiceDto invoiceDto) {
-        BeanUtils.copyProperties(invoice, invoiceDto);
+    private EstimateDto estimateToDto(Estimate estimate, EstimateDto estimateDto) {
+        BeanUtils.copyProperties(estimate, estimateDto);
 
-        return invoiceDto;
+        return estimateDto;
     }
 
-    private Invoice dtoToInvoice(InvoiceDto invoiceDto, Invoice invoice) {
-        BeanUtils.copyProperties(invoiceDto, invoice, excludeNullValues.getNullPropertyNames(invoiceDto));
+    private Estimate dtoToEstimate(EstimateDto estimateDto, Estimate estimate) {
+        BeanUtils.copyProperties(estimateDto, estimate, excludeNullValues.getNullPropertyNames(estimateDto));
 
-        return invoice;
+        return estimate;
     }
 
     private UserDto getUserDetails(){

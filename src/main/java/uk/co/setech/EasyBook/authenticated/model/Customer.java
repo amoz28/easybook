@@ -1,10 +1,8 @@
 package uk.co.setech.EasyBook.authenticated.model;
 
-import jakarta.persistence.Column;
-import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.Id;
+import jakarta.persistence.*;
 import lombok.*;
+import uk.co.setech.EasyBook.user.User;
 
 @Getter
 @Setter
@@ -27,4 +25,7 @@ public class Customer {
     private String companyname;
     private String postcode;
     private String country;
+    @ManyToOne
+    @JoinColumn(name = "user_id")
+    private User user;
 }

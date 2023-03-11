@@ -15,35 +15,22 @@ spring:
     database-platform: org.hibernate.dialect.MySQLDialect
 
   mail:
-    host: smtp.gmail.com
-    port: 587
-    username: amoz4christ@gmail.com
-    password: Lovejesus1!
-    protocol: smtp
+    host: localhost
+    port: 1025
+    username: hello
+    password: hello
+
     properties:
       mail:
         smtp:
+          ssl:
+            trust: "*"
           auth: true
           starttls:
             enable: true
-            required: true
-#  mail:
-#    host: localhost
-#    port: 1025
-#    username: hello
-#    password: hello
-#
-#    properties:
-#      mail:
-#        smtp:
-#          ssl:
-#            trust: "*"
-#          auth: true
-#          starttls:
-#            enable: true
-#          connectiontimeout: 5000
-#          timeout: 3000
-#          writetimeout: 5000
+          connectiontimeout: 5000
+          timeout: 3000
+          writetimeout: 5000
 
 app:
   email: amoz4christ@gmail.com

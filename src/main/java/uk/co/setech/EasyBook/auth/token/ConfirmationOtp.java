@@ -34,14 +34,4 @@ public class ConfirmationOtp {
             name = "user_id"
     )
     private User user;
-//
-//    public ConfirmationOtp(String otp,
-//                           LocalDateTime createdAt,
-//                           LocalDateTime expiresAt,
-//                           User user) {
-//        this.otp = otp;
-//        this.createdAt = createdAt;
-//        this.expiresAt = expiresAt;
-//        this.user = user;
-//    }
 }

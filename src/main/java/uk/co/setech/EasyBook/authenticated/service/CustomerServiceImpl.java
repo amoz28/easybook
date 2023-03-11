@@ -2,21 +2,19 @@ package uk.co.setech.EasyBook.authenticated.service;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.BeanUtils;
-import org.springframework.beans.BeanWrapper;
-import org.springframework.beans.BeanWrapperImpl;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 import uk.co.setech.EasyBook.auth.GeneralResponse;
+import uk.co.setech.EasyBook.authenticated.controller.UserDto;
 import uk.co.setech.EasyBook.authenticated.dto.CustomerDto;
-import uk.co.setech.EasyBook.authenticated.dto.InvoiceDto;
-import uk.co.setech.EasyBook.authenticated.model.Invoice;
 import uk.co.setech.EasyBook.authenticated.repository.CustomerRepo;
 import uk.co.setech.EasyBook.authenticated.model.Customer;
+import uk.co.setech.EasyBook.repository.UserRepo;
 import uk.co.setech.EasyBook.utils.ExcludeNullValues;
 
-import java.beans.PropertyDescriptor;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
 import java.util.stream.Collectors;
 
 @Service
@@ -24,16 +22,18 @@ import java.util.stream.Collectors;
 public class CustomerServiceImpl implements CustomerService {
 
     private final CustomerRepo customerRepo;
-
+    private final UserRepo userRepo;
     private final ExcludeNullValues excludeNullValues;
-    /**
-     * @param customerDto
-     * @return
-     */
+    private static final String USER_NOT_FOUND = "User with email: %s Not Found";
+
     @Override
     public GeneralResponse createCustomer(CustomerDto customerDto) {
-//        @TODO Validation on the data passed
+        var user = userRepo.findByEmail(getUserDetails().getEmail())
+                .orElseThrow(()->
+                        new UsernameNotFoundException(String.format(USER_NOT_FOUND, getUserDetails().getEmail())));
+
         var customer = dtoToCustomer(customerDto, new Customer());
+        customer.setUser(user);
         customerRepo.save(customer);
 
         return GeneralResponse.builder()
@@ -41,36 +41,35 @@ public class CustomerServiceImpl implements CustomerService {
                 .build();
     }
 
-    /**
-     * @param email
-     * @return
-     */
     @Override
     public CustomerDto getCustomerByEmail(String email) {
-        return customerRepo.findByEmail(email)
+        var user = userRepo.findByEmail(getUserDetails().getEmail())
+                .orElseThrow(()->
+                        new UsernameNotFoundException(String.format(USER_NOT_FOUND, getUserDetails().getEmail())));
+
+        return customerRepo.findByEmailAndUser(email, user)
                 .map(this::customerToDto)
                 .orElseThrow(() -> new IllegalStateException("Customer not found"));
-
-
     }
 
-    /**
-     * @return
-     */
     @Override
     public List<CustomerDto> getAllCustomer() {
-        return customerRepo.findAll().stream()
+        var user = userRepo.findByEmail(getUserDetails().getEmail())
+                .orElseThrow(()->
+                        new UsernameNotFoundException(String.format(USER_NOT_FOUND, getUserDetails().getEmail())));
+        
+        return customerRepo.findAllByUser(user).stream()
                 .map(this::customerToDto)
                 .collect(Collectors.toList());
     }
 
-    /**
-     * @param customerDto
-     * @return
-     */
     @Override
     public CustomerDto updateCustomer(CustomerDto customerDto) {
-        var customer = customerRepo.findByEmail(customerDto.getEmail())
+        var user = userRepo.findByEmail(getUserDetails().getEmail())
+                .orElseThrow(()->
+                        new UsernameNotFoundException(String.format(USER_NOT_FOUND, getUserDetails().getEmail())));
+
+        var customer = customerRepo.findByEmailAndUser(customerDto.getEmail(), user)
                 .orElseThrow(() -> new IllegalStateException("Customer not found"));
 
         customer = dtoToCustomer(customerDto, customer);
@@ -79,12 +78,13 @@ public class CustomerServiceImpl implements CustomerService {
         return customerToDto(savedCustomer);
     }
 
-    /**
-     * @param email
-     */
     @Override
     public GeneralResponse deleteCustomerByEmail(String email) {
-        var customer = customerRepo.findByEmail(email)
+        var user = userRepo.findByEmail(getUserDetails().getEmail())
+                .orElseThrow(()->
+                        new UsernameNotFoundException(String.format(USER_NOT_FOUND, getUserDetails().getEmail())));
+
+        var customer = customerRepo.findByEmailAndUser(email, user)
                 .orElseThrow(() -> new IllegalStateException("Customer not found"));
         customerRepo.delete(customer);
 
@@ -104,5 +104,12 @@ public class CustomerServiceImpl implements CustomerService {
         BeanUtils.copyProperties(customerDto, customer, excludeNullValues.getNullPropertyNames(customerDto));
 
         return customer;
+    }
+
+    private UserDto getUserDetails(){
+        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+        UserDto userDto = UserDto.builder().build();
+        BeanUtils.copyProperties(auth.getPrincipal(), userDto);
+        return userDto;
     }
 }
