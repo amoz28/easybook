@@ -58,7 +58,7 @@ public class AuthenticationService {
         String message = "Please enter the OTP to complete you email verification process "+otp;
         emailService.send(user.getFirstName(), user.getEmail(), message, subject );
 //       @TODO sendMail(email, message, subject );
-        var jwtToken = jwtService.generateToken(user);
+//        var jwtToken = jwtService.generateToken(user);
 
         return GeneralResponse
                 .builder()
