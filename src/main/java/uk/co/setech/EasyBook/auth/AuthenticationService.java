@@ -129,7 +129,7 @@ public class AuthenticationService {
     public AuthenticationResponse resetPassword(AuthenticationRequest request) {
         User user = userRepo.findByEmail(request.getEmail())
                 .orElseThrow(()->new UsernameNotFoundException(String.format(USER_NOT_FOUND, request.getEmail())));
-
+//        @TODO ENSURE USER ARE NOT ABLE TO RESET PASSWORD TWICE WITHOUT CALLING FORGOT PASSWORD TWICE
         var confOtp = confirmationOtpRepository.findByUser(user)
                 .orElseThrow(()-> new IllegalStateException("Invalid UserId"));
 

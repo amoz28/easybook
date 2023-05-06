@@ -24,8 +24,8 @@ public class EstimateController {
     }
 
     @PutMapping
-    public ResponseEntity<EstimateDto> updateEstimate(@RequestBody EstimateDto estamateDto){
-        return ResponseEntity.ok(estimateService.updateEstimate(estamateDto));
+    public ResponseEntity<EstimateDto> updateEstimate(@RequestBody EstimateDto estimateDto){
+        return ResponseEntity.ok(estimateService.updateEstimate(estimateDto));
     }
 
     @GetMapping
@@ -34,8 +34,8 @@ public class EstimateController {
     }
 
     @GetMapping("/getEstimateById")
-    public ResponseEntity<EstimateDto> getEstimate(@RequestParam String estamateId){
-        return ResponseEntity.ok(estimateService.getEstimateById(estamateId));
+    public ResponseEntity<EstimateDto> getEstimate(@RequestParam String estimateId){
+        return ResponseEntity.ok(estimateService.getEstimateById(estimateId));
     }
 
     @DeleteMapping

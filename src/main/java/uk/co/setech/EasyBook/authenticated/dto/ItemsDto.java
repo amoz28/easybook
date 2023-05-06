@@ -15,5 +15,6 @@ public class ItemsDto {
     private String service;
     private String description;
     private Integer quantity;
+    private double price;
 
 }

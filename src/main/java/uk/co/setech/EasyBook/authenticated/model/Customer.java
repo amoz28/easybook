@@ -17,8 +17,6 @@ public class Customer {
     private String displayname;
     private String firstname;
     private String lastname;
-
-    @Column(unique = true)
     private String email;
     private String phonenumber;
     private String address;
