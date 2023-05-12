@@ -23,6 +23,7 @@ public class InvoiceDto {
     private double total;
     private List<ItemsDto> items;
     private String customerEmail;
+    private boolean isInvoicePaid;
     @JsonIgnore
     private Customer customer;
 }

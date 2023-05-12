@@ -10,6 +10,8 @@ public interface CustomerService {
 
     CustomerDto getCustomerByEmail(String email);
 
+    List<CustomerDto> getAllCustomers(int pageNo, int pageSize);
+
     List<CustomerDto> getAllCustomer();
 
     CustomerDto updateCustomer(CustomerDto customerDto);
