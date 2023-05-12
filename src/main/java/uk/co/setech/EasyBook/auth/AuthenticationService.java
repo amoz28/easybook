@@ -10,12 +10,15 @@ import org.springframework.stereotype.Service;
 import uk.co.setech.EasyBook.auth.token.ConfirmationOtp;
 import uk.co.setech.EasyBook.auth.token.ConfirmationOtpRepository;
 import uk.co.setech.EasyBook.auth.token.ConfirmationOtpService;
+import uk.co.setech.EasyBook.authenticated.dto.InvoiceDto;
+import uk.co.setech.EasyBook.authenticated.service.InvoiceService;
 import uk.co.setech.EasyBook.config.JwtService;
 import uk.co.setech.EasyBook.email.EmailService;
 import uk.co.setech.EasyBook.repository.UserRepo;
 import uk.co.setech.EasyBook.user.Role;
 import uk.co.setech.EasyBook.user.User;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.Random;
 
@@ -28,6 +31,8 @@ public class AuthenticationService {
     private final PasswordEncoder passwordEncoder;
     private final AuthenticationManager authenticationManager;
     private final JwtService jwtService;
+
+    private final InvoiceService invoiceService;
 
     private final EmailService emailService;
     private final ConfirmationOtpService confirmationOtpService;
@@ -58,7 +63,6 @@ public class AuthenticationService {
         String message = "Please enter the OTP to complete you email verification process "+otp;
         emailService.send(user.getFirstName(), user.getEmail(), message, subject );
 //       @TODO sendMail(email, message, subject );
-//        var jwtToken = jwtService.generateToken(user);
 
         return GeneralResponse
                 .builder()
@@ -76,11 +80,19 @@ public class AuthenticationService {
                 .orElseThrow(()->
                         new UsernameNotFoundException(String.format(USER_NOT_FOUND, request.getEmail())));
 
+        var totalOverdueInvoices = invoiceService.getAllInvoice().stream()
+                .filter(invoiceDto -> invoiceDto.isInvoicePaid()
+                        &&  invoiceDto.getDuedate().isAfter(LocalDate.now()))
+                .mapToDouble(InvoiceDto::getTotal)
+                .sum();
+
         var jwtToken = jwtService.generateToken(user);
+
         return AuthenticationResponse.builder()
                 .firstname(user.getFirstName())
                 .lastname(user.getLastName())
                 .email(request.getEmail())
+                .overdueInvoice(totalOverdueInvoices)
                 .token(jwtToken)
                 .build();
     }
@@ -129,7 +141,7 @@ public class AuthenticationService {
     public AuthenticationResponse resetPassword(AuthenticationRequest request) {
         User user = userRepo.findByEmail(request.getEmail())
                 .orElseThrow(()->new UsernameNotFoundException(String.format(USER_NOT_FOUND, request.getEmail())));
-//        @TODO ENSURE USER ARE NOT ABLE TO RESET PASSWORD TWICE WITHOUT CALLING FORGOT PASSWORD TWICE
+//      @TODO ENSURE USER ARE NOT ABLE TO RESET PASSWORD TWICE WITHOUT CALLING FORGOT PASSWORD TWICE
         var confOtp = confirmationOtpRepository.findByUser(user)
                 .orElseThrow(()-> new IllegalStateException("Invalid UserId"));
 

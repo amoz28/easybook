@@ -11,5 +11,6 @@ public class AuthenticationResponse {
     private String firstname;
     private String lastname;
     private String email;
+    private Double overdueInvoice;
     private String token;
 }

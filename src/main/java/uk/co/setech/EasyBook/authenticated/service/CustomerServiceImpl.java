@@ -2,6 +2,7 @@ package uk.co.setech.EasyBook.authenticated.service;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.BeanUtils;
+import org.springframework.data.domain.PageRequest;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -50,6 +51,17 @@ public class CustomerServiceImpl implements CustomerService {
         return customerRepo.findByEmailAndUser(email, user)
                 .map(this::customerToDto)
                 .orElseThrow(() -> new IllegalStateException("Customer not found"));
+    }
+    public List<CustomerDto> getAllCustomers(int pageNo, int pageSize) {
+        var user = userRepo.findByEmail(getUserDetails().getEmail())
+                .orElseThrow(()->
+                        new UsernameNotFoundException(String.format(USER_NOT_FOUND, getUserDetails().getEmail())));
+
+        PageRequest pageable = PageRequest.of(pageNo, pageSize);
+
+        return customerRepo.findAllByUser(user, pageable)
+                .map(this::customerToDto)
+                .getContent();
     }
 
     @Override
