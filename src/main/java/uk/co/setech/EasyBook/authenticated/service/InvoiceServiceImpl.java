@@ -121,4 +121,9 @@ public class InvoiceServiceImpl implements InvoiceService{
         BeanUtils.copyProperties(auth.getPrincipal(), userDto);
         return userDto;
     }
+
+    @Override
+    public void sendInvoiceReminder() {
+//        invoiceRepo.deleteByIdAndUser();
+    }
 }

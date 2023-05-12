@@ -20,11 +20,13 @@ public class Invoice {
     private Long id;
     private LocalDate duedate;
     private LocalDate servicedate;
+    private LocalDate lastReminderDate;
     private Double rate;
     private String vat;
     private double subtotal;
     private double tax;
     private double total;
+    private boolean isInvoicePaid;
 
     @OneToMany(cascade = CascadeType.ALL)
     @JoinColumn(name = "invoice_id")
