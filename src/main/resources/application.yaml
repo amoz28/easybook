@@ -1,3 +1,21 @@
 spring:
   profiles:
     active: local
+  application:
+    name: easybook-api
+
+logging:
+  file:
+    name: logs/${spring.application.name}.log
+
+api:
+  info:
+    title: EasyBook API
+    description: API for the easy book invoicing system
+    version: 1.0
+
+springdoc:
+  swagger-ui:
+    operations-sorter: method
+    path: /swagger-ui
+  show-actuator: true

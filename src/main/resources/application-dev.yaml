@@ -29,8 +29,3 @@ spring:
 
 app:
   email: amoz4christ@gmail.com
-
-springdoc:
-  swagger-ui:
-    path=/swagger-ui:
-      html: /api/v1/auth/swagger
