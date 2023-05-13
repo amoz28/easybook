@@ -9,6 +9,7 @@ import org.springframework.stereotype.Service;
 import uk.co.setech.EasyBook.dto.GeneralResponse;
 import uk.co.setech.EasyBook.dto.UserDto;
 import uk.co.setech.EasyBook.dto.InvoiceDto;
+import uk.co.setech.EasyBook.email.EmailService;
 import uk.co.setech.EasyBook.model.Invoice;
 import uk.co.setech.EasyBook.repository.CustomerRepo;
 import uk.co.setech.EasyBook.repository.InvoiceRepo;
@@ -16,6 +17,7 @@ import uk.co.setech.EasyBook.repository.UserRepo;
 import uk.co.setech.EasyBook.service.InvoiceService;
 import uk.co.setech.EasyBook.utils.Utils;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.stream.Collectors;
 
@@ -27,6 +29,8 @@ public class InvoiceServiceImpl implements InvoiceService {
     private final InvoiceRepo invoiceRepo;
     private final CustomerRepo customerRepo;
     private final UserRepo userRepo;
+
+    private final EmailService emailService;
 
     @Override
     public InvoiceDto createInvoice(InvoiceDto invoiceDto) {
@@ -120,6 +124,19 @@ public class InvoiceServiceImpl implements InvoiceService {
 
     @Override
     public void sendInvoiceReminder() {
-//        invoiceRepo.deleteByIdAndUser();
+        var user = userRepo.findByEmail(getUserDetails().getEmail())
+                .orElseThrow(()->
+                        new UsernameNotFoundException(String.format(USER_NOT_FOUND, getUserDetails().getEmail())));
+        var message = "Your invoice attached to this mail is still out standing please pay up";
+        invoiceRepo
+                .findByUserAndIsInvoicePaidIsFalseAndLastReminderDateBefore(user, LocalDate.now())
+                .stream()
+                .map(invoice -> {
+                    emailService
+                            .send(invoice.getCustomer().getFirstname(),message,invoice.getCustomer().getEmail(),"INVOICE REMINDER");
+                    return null;
+                })
+                .collect(Collectors.toList());
+        ;
     }
 }
