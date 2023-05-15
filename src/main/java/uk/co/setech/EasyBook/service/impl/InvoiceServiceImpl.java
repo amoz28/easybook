@@ -138,4 +138,13 @@ public class InvoiceServiceImpl implements InvoiceService {
                 })
                 .collect(Collectors.toList());
     }
+
+    @Override
+    public GeneralResponse addPayment(Long invoiceId) {
+        invoiceRepo.findById(invoiceId)
+                .orElseThrow(()->new IllegalStateException("Invoice not found"));
+        return GeneralResponse.builder()
+                .message("Payment was successfuly updated")
+                .build();
+    }
 }

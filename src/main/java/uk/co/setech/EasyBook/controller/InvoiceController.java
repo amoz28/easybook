@@ -36,6 +36,11 @@ public class InvoiceController {
         return ResponseEntity.ok(invoiceService.getInvoiceById(invoiceId));
     }
 
+    @PutMapping("/addpayment")
+    public ResponseEntity<GeneralResponse> addPayment(@RequestBody Long invoiceId) {
+        return ResponseEntity.ok(invoiceService.addPayment(invoiceId));
+    }
+
     @DeleteMapping
     public ResponseEntity<GeneralResponse> deleteInvoice(@RequestParam String invoiceId) {
         return ResponseEntity.ok(invoiceService.deleteInvoiceById(invoiceId));

@@ -1,6 +1,7 @@
 package uk.co.setech.EasyBook.repository;
 
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Query;
 import uk.co.setech.EasyBook.model.Invoice;
 import uk.co.setech.EasyBook.model.User;
 
@@ -16,8 +17,7 @@ public interface InvoiceRepo extends JpaRepository<Invoice, Long> {
 
     void deleteByIdAndUser(Long id, User user);
 
-    List<Invoice> findByUserAndIsInvoicePaidIsFalseAndLastReminderDateBefore(
-            User user, LocalDate date
-    );
+    List<Invoice> findByUserAndIsInvoicePaidIsFalseAndLastReminderDateBefore(User user, LocalDate date);
 
+//    void updateIsInvoicePaidById(Long invoiceId, boolean isPaid);
 }

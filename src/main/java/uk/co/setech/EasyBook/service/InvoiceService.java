@@ -17,4 +17,6 @@ public interface InvoiceService {
     GeneralResponse deleteInvoiceById(String email);
 
     void sendInvoiceReminder();
+
+    GeneralResponse addPayment(Long invoiceId);
 }
