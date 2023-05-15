@@ -52,16 +52,7 @@ public class AuthenticationService {
                 .build();
         userRepo.save(user);
 
-        String otp = String.valueOf(new Random().nextInt(9000) + 1000);
-
-        var confirmationOtp = ConfirmOtp.builder()
-                .otp(otp)
-                .createdAt(LocalDateTime.now())
-                .expiresAt(LocalDateTime.now().plusMinutes(60*24))
-                .user(user)
-                .build();
-
-        confirmationOtpRepository.save(confirmationOtp);
+        String otp = handleOtp(user);
 
         String subject = "Account Verification OTP";
         String message = "Please enter the OTP to complete you email verification process "+otp;
@@ -72,6 +63,20 @@ public class AuthenticationService {
                 .builder()
                 .message("Account successfuly created, an OTP has been sent to your account for verification")
                 .build();
+    }
+
+    private String handleOtp(User user) {
+        String otp = String.valueOf(new Random().nextInt(9000) + 1000);
+
+        var confirmationOtp = ConfirmOtp.builder()
+                .otp(otp)
+                .createdAt(LocalDateTime.now())
+                .expiresAt(LocalDateTime.now().plusMinutes(60*24))
+                .user(user)
+                .build();
+
+        confirmationOtpRepository.save(confirmationOtp);
+        return otp;
     }
 
     public AuthenticationResponse authentication(AuthenticationRequest request) {
@@ -130,8 +135,7 @@ public class AuthenticationService {
     public GeneralResponse forgotPassword(String email) {
         User user = userRepo.findByEmail(email)
                 .orElseThrow(()->new UsernameNotFoundException(String.format(USER_NOT_FOUND, email)));
-
-        var otp = confirmationOtpService.getOtp(user);
+        var otp = handleOtp(user);
         String subject = "Reset Password - OTP Verification";
         String message = "You are about to reset your password, use this OTP to complete the reset process "+otp;
         emailService.send(user.getFirstName(), user.getEmail(), message, subject);
