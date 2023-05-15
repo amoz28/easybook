@@ -3,8 +3,8 @@ package uk.co.setech.EasyBook.controller;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import uk.co.setech.EasyBook.dto.GeneralResponse;
 import uk.co.setech.EasyBook.dto.CustomerDto;
+import uk.co.setech.EasyBook.dto.GeneralResponse;
 import uk.co.setech.EasyBook.service.CustomerService;
 
 import java.util.List;

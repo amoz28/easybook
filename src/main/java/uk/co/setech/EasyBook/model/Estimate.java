@@ -13,7 +13,7 @@ import java.util.List;
 @Entity
 @SuperBuilder
 @RequiredArgsConstructor
-public class Estimate{
+public class Estimate {
 
     @Id
     @GeneratedValue

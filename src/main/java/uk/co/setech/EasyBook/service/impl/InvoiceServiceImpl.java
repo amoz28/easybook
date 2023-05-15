@@ -7,8 +7,8 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 import uk.co.setech.EasyBook.dto.GeneralResponse;
-import uk.co.setech.EasyBook.dto.UserDto;
 import uk.co.setech.EasyBook.dto.InvoiceDto;
+import uk.co.setech.EasyBook.dto.UserDto;
 import uk.co.setech.EasyBook.email.EmailService;
 import uk.co.setech.EasyBook.model.Invoice;
 import uk.co.setech.EasyBook.repository.CustomerRepo;
@@ -35,11 +35,11 @@ public class InvoiceServiceImpl implements InvoiceService {
     @Override
     public InvoiceDto createInvoice(InvoiceDto invoiceDto) {
         var user = userRepo.findByEmail(getUserDetails().getEmail())
-                .orElseThrow(()->
+                .orElseThrow(() ->
                         new UsernameNotFoundException(String.format(USER_NOT_FOUND, getUserDetails().getEmail())));
 
         var customer = customerRepo.findByEmailAndUser(invoiceDto.getCustomerEmail(), user)
-                .orElseThrow(()-> new IllegalArgumentException("Customer does not exist"));
+                .orElseThrow(() -> new IllegalArgumentException("Customer does not exist"));
         invoiceDto.setCustomer(customer);
 
         var invoice = dtoToInvoice(invoiceDto, Invoice.builder().build());
@@ -52,11 +52,11 @@ public class InvoiceServiceImpl implements InvoiceService {
     @Override
     public InvoiceDto updateInvoice(InvoiceDto invoiceDto) {
         var user = userRepo.findByEmail(getUserDetails().getEmail())
-                .orElseThrow(()->
+                .orElseThrow(() ->
                         new UsernameNotFoundException(String.format(USER_NOT_FOUND, getUserDetails().getEmail())));
 
         var invoice = invoiceRepo.findByIdAndUser(invoiceDto.getId(), user)
-                .orElseThrow(()-> new IllegalStateException("Invalid invoice number"));
+                .orElseThrow(() -> new IllegalStateException("Invalid invoice number"));
 
         invoice = dtoToInvoice(invoiceDto, invoice);
 
@@ -68,31 +68,31 @@ public class InvoiceServiceImpl implements InvoiceService {
     @Override
     public List<InvoiceDto> getAllInvoice() {
         var user = userRepo.findByEmail(getUserDetails().getEmail())
-                .orElseThrow(()->
+                .orElseThrow(() ->
                         new UsernameNotFoundException(String.format(USER_NOT_FOUND, getUserDetails().getEmail())));
 
         return invoiceRepo.findByUser(user).stream()
-            .map(invoice -> invoiceToDto(invoice, InvoiceDto.builder().build()))
-            .collect(Collectors.toList());
+                .map(invoice -> invoiceToDto(invoice, InvoiceDto.builder().build()))
+                .collect(Collectors.toList());
     }
 
     @Override
     public InvoiceDto getInvoiceById(String invoiceId) {
         var user = userRepo.findByEmail(getUserDetails().getEmail())
-                .orElseThrow(()->
+                .orElseThrow(() ->
                         new UsernameNotFoundException(String.format(USER_NOT_FOUND, getUserDetails().getEmail())));
 
         return invoiceRepo.findByIdAndUser(Long.valueOf(invoiceId), user)
                 .map(invoice ->
-                    invoiceToDto(invoice, InvoiceDto.builder().build())
+                        invoiceToDto(invoice, InvoiceDto.builder().build())
                 )
-                .orElseThrow(()-> new IllegalArgumentException("Invoice Id not found"));
+                .orElseThrow(() -> new IllegalArgumentException("Invoice Id not found"));
     }
 
     @Override
     public GeneralResponse deleteInvoiceById(String invoiceId) {
         var user = userRepo.findByEmail(getUserDetails().getEmail())
-                .orElseThrow(()->
+                .orElseThrow(() ->
                         new UsernameNotFoundException(String.format(USER_NOT_FOUND, getUserDetails().getEmail())));
 
         invoiceRepo.deleteByIdAndUser(Long.valueOf(invoiceId), user);
@@ -115,7 +115,7 @@ public class InvoiceServiceImpl implements InvoiceService {
         return invoice;
     }
 
-    private UserDto getUserDetails(){
+    private UserDto getUserDetails() {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         UserDto userDto = UserDto.builder().build();
         BeanUtils.copyProperties(auth.getPrincipal(), userDto);
@@ -125,7 +125,7 @@ public class InvoiceServiceImpl implements InvoiceService {
     @Override
     public void sendInvoiceReminder() {
         var user = userRepo.findByEmail(getUserDetails().getEmail())
-                .orElseThrow(()->
+                .orElseThrow(() ->
                         new UsernameNotFoundException(String.format(USER_NOT_FOUND, getUserDetails().getEmail())));
         var message = "Your invoice attached to this mail is still out standing please pay up";
         invoiceRepo
@@ -133,10 +133,9 @@ public class InvoiceServiceImpl implements InvoiceService {
                 .stream()
                 .map(invoice -> {
                     emailService
-                            .send(invoice.getCustomer().getFirstname(),message,invoice.getCustomer().getEmail(),"INVOICE REMINDER");
+                            .send(invoice.getCustomer().getFirstname(), message, invoice.getCustomer().getEmail(), "INVOICE REMINDER");
                     return null;
                 })
                 .collect(Collectors.toList());
-        ;
     }
 }

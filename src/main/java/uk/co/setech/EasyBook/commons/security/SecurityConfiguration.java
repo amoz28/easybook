@@ -23,6 +23,7 @@ public class SecurityConfiguration implements WebSecurityCustomizer {
     };
     private final JwtAuthenticationFilter jwtAuthFilter;
     private final AuthenticationProvider authenticationProvider;
+
     @Override
     public void customize(WebSecurity web) {
         web.ignoring().requestMatchers(AUTH_LIST);
@@ -34,7 +35,7 @@ public class SecurityConfiguration implements WebSecurityCustomizer {
                 .csrf()
                 .disable()
                 .authorizeHttpRequests()
-                .requestMatchers("/api/v1/auth/**","/v1", "/api/balance/**")
+                .requestMatchers("/api/v1/auth/**", "/v1", "/api/balance/**")
                 .permitAll()
                 .anyRequest()
                 .authenticated()

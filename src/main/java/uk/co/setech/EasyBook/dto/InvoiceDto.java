@@ -1,7 +1,9 @@
 package uk.co.setech.EasyBook.dto;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
-import lombok.*;
+import lombok.Getter;
+import lombok.RequiredArgsConstructor;
+import lombok.Setter;
 import lombok.experimental.SuperBuilder;
 import uk.co.setech.EasyBook.model.Customer;
 

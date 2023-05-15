@@ -7,8 +7,8 @@ import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 import uk.co.setech.EasyBook.dto.UserDto;
-import uk.co.setech.EasyBook.repository.UserRepo;
 import uk.co.setech.EasyBook.model.User;
+import uk.co.setech.EasyBook.repository.UserRepo;
 import uk.co.setech.EasyBook.service.CompanyService;
 import uk.co.setech.EasyBook.utils.Utils;
 

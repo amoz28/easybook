@@ -1,7 +1,7 @@
 package uk.co.setech.EasyBook.service;
 
-import uk.co.setech.EasyBook.dto.GeneralResponse;
 import uk.co.setech.EasyBook.dto.EstimateDto;
+import uk.co.setech.EasyBook.dto.GeneralResponse;
 
 import java.util.List;
 

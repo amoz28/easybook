@@ -5,4 +5,5 @@ import jakarta.validation.constraints.NotNull;
 
 public record VerificationRequest(
         @NotNull String email,
-        @NotNull String otp) {}
+        @NotNull String otp) {
+}

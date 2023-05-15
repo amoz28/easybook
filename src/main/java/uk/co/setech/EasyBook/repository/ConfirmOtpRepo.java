@@ -21,6 +21,7 @@ public interface ConfirmOtpRepo
     Optional<ConfirmOtp> findByUser(User user);
 
     Optional<ConfirmOtp> findByConfirmedAtGreaterThan(LocalDateTime confirmedAt);
+
     @Transactional
     @Modifying
     @Query("UPDATE ConfirmOtp c " +

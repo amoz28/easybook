@@ -6,9 +6,9 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
+import uk.co.setech.EasyBook.dto.EstimateDto;
 import uk.co.setech.EasyBook.dto.GeneralResponse;
 import uk.co.setech.EasyBook.dto.UserDto;
-import uk.co.setech.EasyBook.dto.EstimateDto;
 import uk.co.setech.EasyBook.model.Estimate;
 import uk.co.setech.EasyBook.repository.CustomerRepo;
 import uk.co.setech.EasyBook.repository.EstimateRepo;
@@ -33,11 +33,11 @@ public class EstimateServiceImpl implements EstimateService {
     @Override
     public EstimateDto createEstimate(EstimateDto estimateDto) {
         var user = userRepo.findByEmail(getUserDetails().getEmail())
-                .orElseThrow(()->
+                .orElseThrow(() ->
                         new UsernameNotFoundException(String.format(USER_NOT_FOUND, getUserDetails().getEmail())));
 
         var customer = customerRepo.findByEmailAndUser(estimateDto.getCustomerEmail(), user)
-                .orElseThrow(()-> new IllegalArgumentException("Customer does not exist"));
+                .orElseThrow(() -> new IllegalArgumentException("Customer does not exist"));
         estimateDto.setCustomer(customer);
 
         var estimate = dtoToEstimate(estimateDto, Estimate.builder().build());
@@ -52,11 +52,11 @@ public class EstimateServiceImpl implements EstimateService {
     @Override
     public EstimateDto updateEstimate(EstimateDto estimateDto) {
         var user = userRepo.findByEmail(getUserDetails().getEmail())
-                .orElseThrow(()->
+                .orElseThrow(() ->
                         new UsernameNotFoundException(String.format(USER_NOT_FOUND, getUserDetails().getEmail())));
 
         var estimate = estimateRepo.findByIdAndUser(estimateDto.getId(), user)
-                .orElseThrow(()-> new IllegalStateException("Invalid invoice number"));
+                .orElseThrow(() -> new IllegalStateException("Invalid invoice number"));
 
         estimate = dtoToEstimate(estimateDto, estimate);
 
@@ -68,31 +68,31 @@ public class EstimateServiceImpl implements EstimateService {
     @Override
     public List<EstimateDto> getAllEstimate() {
         var user = userRepo.findByEmail(getUserDetails().getEmail())
-                .orElseThrow(()->
+                .orElseThrow(() ->
                         new UsernameNotFoundException(String.format(USER_NOT_FOUND, getUserDetails().getEmail())));
 
         return estimateRepo.findByUser(user).stream()
-            .map(estimate -> estimateToDto(estimate, EstimateDto.builder().build()))
-            .collect(Collectors.toList());
+                .map(estimate -> estimateToDto(estimate, EstimateDto.builder().build()))
+                .collect(Collectors.toList());
     }
 
     @Override
     public EstimateDto getEstimateById(String invoiceId) {
         var user = userRepo.findByEmail(getUserDetails().getEmail())
-                .orElseThrow(()->
+                .orElseThrow(() ->
                         new UsernameNotFoundException(String.format(USER_NOT_FOUND, getUserDetails().getEmail())));
 
         return estimateRepo.findByIdAndUser(Long.valueOf(invoiceId), user)
                 .map(estimate ->
-                    estimateToDto(estimate, EstimateDto.builder().build())
+                        estimateToDto(estimate, EstimateDto.builder().build())
                 )
-                .orElseThrow(()-> new IllegalArgumentException("Invoice Id not found"));
+                .orElseThrow(() -> new IllegalArgumentException("Invoice Id not found"));
     }
 
     @Override
     public GeneralResponse deleteEstimateById(String invoiceId) {
         var user = userRepo.findByEmail(getUserDetails().getEmail())
-                .orElseThrow(()->
+                .orElseThrow(() ->
                         new UsernameNotFoundException(String.format(USER_NOT_FOUND, getUserDetails().getEmail())));
 
         invoiceRepo.deleteByIdAndUser(Long.valueOf(invoiceId), user);
@@ -115,7 +115,7 @@ public class EstimateServiceImpl implements EstimateService {
         return estimate;
     }
 
-    private UserDto getUserDetails(){
+    private UserDto getUserDetails() {
         Authentication auth = SecurityContextHolder.getContext().getAuthentication();
         UserDto userDto = UserDto.builder().build();
         BeanUtils.copyProperties(auth.getPrincipal(), userDto);

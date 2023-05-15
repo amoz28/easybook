@@ -7,20 +7,15 @@ import org.springframework.security.authentication.UsernamePasswordAuthenticatio
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
-import uk.co.setech.EasyBook.dto.AuthenticationRequest;
-import uk.co.setech.EasyBook.dto.AuthenticationResponse;
-import uk.co.setech.EasyBook.dto.GeneralResponse;
-import uk.co.setech.EasyBook.dto.RegisterRequest;
-import uk.co.setech.EasyBook.dto.VerificationRequest;
-import uk.co.setech.EasyBook.model.ConfirmOtp;
-import uk.co.setech.EasyBook.repository.ConfirmOtpRepo;
 import uk.co.setech.EasyBook.commons.security.JwtService;
-import uk.co.setech.EasyBook.dto.InvoiceDto;
-import uk.co.setech.EasyBook.service.InvoiceService;
+import uk.co.setech.EasyBook.dto.*;
 import uk.co.setech.EasyBook.email.EmailService;
-import uk.co.setech.EasyBook.repository.UserRepo;
 import uk.co.setech.EasyBook.enums.Role;
+import uk.co.setech.EasyBook.model.ConfirmOtp;
 import uk.co.setech.EasyBook.model.User;
+import uk.co.setech.EasyBook.repository.ConfirmOtpRepo;
+import uk.co.setech.EasyBook.repository.UserRepo;
+import uk.co.setech.EasyBook.service.InvoiceService;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -55,8 +50,8 @@ public class AuthenticationService {
         String otp = handleOtp(user);
 
         String subject = "Account Verification OTP";
-        String message = "Please enter the OTP to complete you email verification process "+otp;
-        emailService.send(user.getFirstName(), user.getEmail(), message, subject );
+        String message = "Please enter the OTP to complete you email verification process " + otp;
+        emailService.send(user.getFirstName(), user.getEmail(), message, subject);
 //       @TODO sendMail(email, message, subject );
 
         return GeneralResponse
@@ -71,7 +66,7 @@ public class AuthenticationService {
         var confirmationOtp = ConfirmOtp.builder()
                 .otp(otp)
                 .createdAt(LocalDateTime.now())
-                .expiresAt(LocalDateTime.now().plusMinutes(60*24))
+                .expiresAt(LocalDateTime.now().plusMinutes(60 * 24))
                 .user(user)
                 .build();
 
@@ -86,12 +81,12 @@ public class AuthenticationService {
                         request.getPassword())
         );
         var user = userRepo.findByEmail(request.getEmail())
-                .orElseThrow(()->
+                .orElseThrow(() ->
                         new UsernameNotFoundException(String.format(USER_NOT_FOUND, request.getEmail())));
 
         var totalOverdueInvoices = invoiceService.getAllInvoice().stream()
                 .filter(invoiceDto -> invoiceDto.isInvoicePaid()
-                        &&  invoiceDto.getDuedate().isAfter(LocalDate.now()))
+                        && invoiceDto.getDuedate().isAfter(LocalDate.now()))
                 .mapToDouble(InvoiceDto::getTotal)
                 .sum();
 
@@ -108,7 +103,7 @@ public class AuthenticationService {
 
     public GeneralResponse verifyOtp(VerificationRequest request) {
         var user = userRepo.findByEmail(request.email())
-                .orElseThrow(()->new UsernameNotFoundException(String.format(USER_NOT_FOUND, request.email())));
+                .orElseThrow(() -> new UsernameNotFoundException(String.format(USER_NOT_FOUND, request.email())));
 
         String confirmationMsg = confirmationOtpService.verifyOtpByUserId(request.otp(), user);
         user.setEnabled(Boolean.TRUE);
@@ -121,12 +116,12 @@ public class AuthenticationService {
 
     public GeneralResponse resendOtp(String email) {
         User user = userRepo.findByEmail(email)
-                .orElseThrow(()->new UsernameNotFoundException(String.format(USER_NOT_FOUND, email)));
+                .orElseThrow(() -> new UsernameNotFoundException(String.format(USER_NOT_FOUND, email)));
 
         var otp = confirmationOtpService.getOtp(user);
         String subject = "Resend OTP";
-        String message = "Here is the OTP you requested for to complete the process "+otp;
-        emailService.send(user.getFirstName(), email, message, subject );
+        String message = "Here is the OTP you requested for to complete the process " + otp;
+        emailService.send(user.getFirstName(), email, message, subject);
         return GeneralResponse.builder()
                 .message("OTP has been resent check your email")
                 .build();
@@ -134,10 +129,10 @@ public class AuthenticationService {
 
     public GeneralResponse forgotPassword(String email) {
         User user = userRepo.findByEmail(email)
-                .orElseThrow(()->new UsernameNotFoundException(String.format(USER_NOT_FOUND, email)));
+                .orElseThrow(() -> new UsernameNotFoundException(String.format(USER_NOT_FOUND, email)));
         var otp = handleOtp(user);
         String subject = "Reset Password - OTP Verification";
-        String message = "You are about to reset your password, use this OTP to complete the reset process "+otp;
+        String message = "You are about to reset your password, use this OTP to complete the reset process " + otp;
         emailService.send(user.getFirstName(), user.getEmail(), message, subject);
 
         //       @TODO sendMail(email, message, subject );
@@ -148,12 +143,12 @@ public class AuthenticationService {
 
     public AuthenticationResponse resetPassword(AuthenticationRequest request) {
         User user = userRepo.findByEmail(request.getEmail())
-                .orElseThrow(()->new UsernameNotFoundException(String.format(USER_NOT_FOUND, request.getEmail())));
+                .orElseThrow(() -> new UsernameNotFoundException(String.format(USER_NOT_FOUND, request.getEmail())));
 //      @TODO ENSURE USER ARE NOT ABLE TO RESET PASSWORD TWICE WITHOUT CALLING FORGOT PASSWORD TWICE
         var confOtp = confirmationOtpRepository.findByUser(user)
-                .orElseThrow(()-> new IllegalStateException("Invalid UserId"));
+                .orElseThrow(() -> new IllegalStateException("Invalid UserId"));
 
-        if(LocalDateTime.now().isAfter(confOtp.getConfirmedAt().plusMinutes(5))){
+        if (LocalDateTime.now().isAfter(confOtp.getConfirmedAt().plusMinutes(5))) {
             throw new IllegalStateException("Request Timed Out please try again");
         }
 

@@ -17,27 +17,27 @@ public class InvoiceController {
     private final InvoiceService invoiceService;
 
     @PostMapping
-    public ResponseEntity<InvoiceDto> createInvoice(@RequestBody InvoiceDto invoice){
+    public ResponseEntity<InvoiceDto> createInvoice(@RequestBody InvoiceDto invoice) {
         return ResponseEntity.ok(invoiceService.createInvoice(invoice));
     }
 
     @PutMapping
-    public ResponseEntity<InvoiceDto> updateInvoice(@RequestBody InvoiceDto invoice){
+    public ResponseEntity<InvoiceDto> updateInvoice(@RequestBody InvoiceDto invoice) {
         return ResponseEntity.ok(invoiceService.updateInvoice(invoice));
     }
 
     @GetMapping
-    public ResponseEntity<List<InvoiceDto>> getAllInvoice(){
+    public ResponseEntity<List<InvoiceDto>> getAllInvoice() {
         return ResponseEntity.ok(invoiceService.getAllInvoice());
     }
 
     @GetMapping("/getInvoiceById")
-    public ResponseEntity<InvoiceDto> getInvoice(@RequestParam String invoiceId){
+    public ResponseEntity<InvoiceDto> getInvoice(@RequestParam String invoiceId) {
         return ResponseEntity.ok(invoiceService.getInvoiceById(invoiceId));
     }
 
     @DeleteMapping
-    public ResponseEntity<GeneralResponse> deleteInvoice(@RequestParam String invoiceId){
+    public ResponseEntity<GeneralResponse> deleteInvoice(@RequestParam String invoiceId) {
         return ResponseEntity.ok(invoiceService.deleteInvoiceById(invoiceId));
     }
 }

@@ -2,7 +2,6 @@ package uk.co.setech.EasyBook.utils;
 
 import org.springframework.beans.BeanWrapper;
 import org.springframework.beans.BeanWrapperImpl;
-import org.springframework.stereotype.Service;
 
 import java.beans.PropertyDescriptor;
 import java.util.HashSet;

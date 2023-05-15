@@ -12,13 +12,14 @@ import uk.co.setech.EasyBook.service.CompanyService;
 public class UserController {
 
     private final CompanyService companyService;
+
     @GetMapping()
-    public ResponseEntity<UserDto> getCompanyProfile(){
+    public ResponseEntity<UserDto> getCompanyProfile() {
         return ResponseEntity.ok(companyService.getCompanyProfile());
     }
 
     @PutMapping()
-    public ResponseEntity<UserDto> updateUserDetails(@RequestBody UserDto userDto){
+    public ResponseEntity<UserDto> updateUserDetails(@RequestBody UserDto userDto) {
         return ResponseEntity.ok(companyService.updateCompanyProfile(userDto));
     }
 }

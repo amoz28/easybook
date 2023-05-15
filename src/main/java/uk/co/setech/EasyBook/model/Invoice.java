@@ -2,12 +2,13 @@ package uk.co.setech.EasyBook.model;
 
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
-import lombok.*;
+import lombok.Data;
+import lombok.RequiredArgsConstructor;
 import lombok.experimental.SuperBuilder;
-
 
 import java.time.LocalDate;
 import java.util.List;
+
 @Data
 @Entity
 @SuperBuilder
