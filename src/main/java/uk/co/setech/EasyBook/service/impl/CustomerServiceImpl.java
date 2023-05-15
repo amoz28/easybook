@@ -38,7 +38,7 @@ public class CustomerServiceImpl implements CustomerService {
         customerRepo.save(customer);
 
         return GeneralResponse.builder()
-                .message("User Created")
+                .message("User Successfuly Created")
                 .build();
     }
 
