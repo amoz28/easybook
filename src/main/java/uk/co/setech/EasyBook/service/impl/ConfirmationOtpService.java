@@ -2,7 +2,7 @@ package uk.co.setech.EasyBook.service.impl;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
-import uk.co.setech.EasyBook.dto.VerificationRequest;
+import uk.co.setech.EasyBook.model.ConfirmOtp;
 import uk.co.setech.EasyBook.repository.ConfirmOtpRepo;
 import uk.co.setech.EasyBook.model.User;
 
@@ -39,13 +39,17 @@ public class ConfirmationOtpService {
                 .orElseThrow(()->new IllegalCallerException("Invalid User Id"));
 
         if (LocalDateTime.now().isAfter(otpCheck.getExpiresAt())){
-            String otp = String.valueOf(new Random().nextInt(9000) + 1000);
-            otpCheck.setOtp(otp);
-            otpCheck.setConfirmedAt(null);
-            otpCheck.setCreatedAt(LocalDateTime.now());
-            otpCheck.setExpiresAt(LocalDateTime.now().plusMinutes(60*24));
-            confirmationOtpRepository.save(otpCheck);
+            persistOtp(otpCheck);
         }
         return otpCheck.getOtp();
+    }
+
+    private void persistOtp(ConfirmOtp otpCheck) {
+        String otp = String.valueOf(new Random().nextInt(9000) + 1000);
+        otpCheck.setOtp(otp);
+        otpCheck.setConfirmedAt(null);
+        otpCheck.setCreatedAt(LocalDateTime.now());
+        otpCheck.setExpiresAt(LocalDateTime.now().plusMinutes(60*24));
+        confirmationOtpRepository.save(otpCheck);
     }
 }

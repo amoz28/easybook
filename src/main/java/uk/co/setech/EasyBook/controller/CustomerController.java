@@ -35,7 +35,7 @@ public class CustomerController {
         return ResponseEntity.ok(customerService.getAllCustomer());
     }
 
-    @GetMapping
+    @GetMapping("/pages")
     public ResponseEntity<List<CustomerDto>> getAllCustomers(
             @RequestParam(defaultValue = "0") int pageNo,
             @RequestParam(defaultValue = "20") int pageSize

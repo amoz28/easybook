@@ -52,6 +52,8 @@ public class CustomerServiceImpl implements CustomerService {
                 .map(this::customerToDto)
                 .orElseThrow(() -> new IllegalStateException("Customer not found"));
     }
+
+    @Override
     public List<CustomerDto> getAllCustomers(int pageNo, int pageSize) {
         var user = userRepo.findByEmail(getUserDetails().getEmail())
                 .orElseThrow(()->

@@ -16,6 +16,7 @@ public class InvoiceDto {
     private Long id;
     private LocalDate duedate;
     private LocalDate servicedate;
+    private LocalDate lastReminderDate;
     private Double rate;
     private String vat;
     private double subtotal;
