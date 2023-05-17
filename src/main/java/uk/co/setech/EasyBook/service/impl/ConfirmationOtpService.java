@@ -17,10 +17,10 @@ public class ConfirmationOtpService {
 
     public String verifyOtpByUserId(String otp, User userId) {
         var otpCheck = confirmationOtpRepository.findByOtpAndUser(otp, userId)
-                .orElseThrow(() -> new IllegalCallerException("Invalid OTP"));
+                .orElseThrow(() -> new IllegalCallerException("Invalid OTP Provided"));
 
         if (LocalDateTime.now().isAfter(otpCheck.getExpiresAt())) {
-            throw new IllegalStateException("OTP Expired");
+            throw new IllegalStateException("The OTP you entered has expired");
         }
 
         otpCheck.setConfirmedAt(LocalDateTime.now());
@@ -30,9 +30,9 @@ public class ConfirmationOtpService {
         return "Otp Verification was Successful";
     }
 
-    public String getOtp(User userId) {
-        var otpCheck = confirmationOtpRepository.findByUser(userId)
-                .orElseThrow(() -> new IllegalCallerException("Invalid User Id"));
+    public String getOtp(User user) {
+        var otpCheck = confirmationOtpRepository.findByUser(user)
+                .orElseThrow(() -> new IllegalCallerException("Invalid User"));
 
         if (LocalDateTime.now().isAfter(otpCheck.getExpiresAt())) {
             persistOtp(otpCheck);
