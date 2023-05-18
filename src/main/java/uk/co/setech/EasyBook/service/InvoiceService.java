@@ -12,6 +12,7 @@ public interface InvoiceService {
 
     List<InvoiceDto> getAllInvoice();
 
+    List<InvoiceDto> getInvoiceDtos(String email);
     InvoiceDto getInvoiceById(String invoiceId);
 
     GeneralResponse deleteInvoiceById(String email);

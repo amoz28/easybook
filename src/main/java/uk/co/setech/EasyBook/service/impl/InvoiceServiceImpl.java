@@ -67,9 +67,15 @@ public class InvoiceServiceImpl implements InvoiceService {
 
     @Override
     public List<InvoiceDto> getAllInvoice() {
-        var user = userRepo.findByEmail(getUserDetails().getEmail())
+        String email = getUserDetails().getEmail();
+        return getInvoiceDtos(email);
+    }
+
+    @Override
+    public List<InvoiceDto> getInvoiceDtos(String email) {
+        var user = userRepo.findByEmail(email)
                 .orElseThrow(() ->
-                        new UsernameNotFoundException(String.format(USER_NOT_FOUND, getUserDetails().getEmail())));
+                        new UsernameNotFoundException(String.format(USER_NOT_FOUND, email)));
 
         return invoiceRepo.findByUser(user).stream()
                 .map(invoice -> invoiceToDto(invoice, InvoiceDto.builder().build()))

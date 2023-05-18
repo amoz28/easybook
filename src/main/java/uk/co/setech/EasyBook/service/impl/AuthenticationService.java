@@ -80,11 +80,12 @@ public class AuthenticationService {
                         request.getEmail(),
                         request.getPassword())
         );
+
         var user = userRepo.findByEmail(request.getEmail())
                 .orElseThrow(() ->
                         new UsernameNotFoundException(String.format(USER_NOT_FOUND, request.getEmail())));
 
-        var totalOverdueInvoices = invoiceService.getAllInvoice().stream()
+        var totalOverdueInvoices = invoiceService.getInvoiceDtos(request.getEmail()).stream()
                 .filter(invoiceDto -> invoiceDto.isInvoicePaid()
                         && invoiceDto.getDuedate().isAfter(LocalDate.now()))
                 .mapToDouble(InvoiceDto::getTotal)
@@ -144,9 +145,11 @@ public class AuthenticationService {
     public AuthenticationResponse resetPassword(AuthenticationRequest request) {
         User user = userRepo.findByEmail(request.getEmail())
                 .orElseThrow(() -> new UsernameNotFoundException(String.format(USER_NOT_FOUND, request.getEmail())));
+        System.out.println("User found "+user.getEmail());
 //      @TODO ENSURE USER ARE NOT ABLE TO RESET PASSWORD TWICE WITHOUT CALLING FORGOT PASSWORD TWICE
         var confOtp = confirmationOtpRepository.findByUser(user)
                 .orElseThrow(() -> new IllegalStateException("Invalid UserId"));
+        System.out.println("User Confirmed "+confOtp);
 
         if (LocalDateTime.now().isAfter(confOtp.getConfirmedAt().plusMinutes(5))) {
             throw new IllegalStateException("Request Timed Out please try again");
