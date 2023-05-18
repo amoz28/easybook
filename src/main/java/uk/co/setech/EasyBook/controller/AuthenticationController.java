@@ -20,27 +20,27 @@ public class AuthenticationController {
         return ResponseEntity.ok(service.register(request));
     }
 
-    @PostMapping("/authenticate")
+    @PostMapping("/login")
     public ResponseEntity<AuthenticationResponse> authenticate(@RequestBody AuthenticationRequest request) {
         return ResponseEntity.ok(service.authentication(request));
     }
 
-    @PostMapping("/verifyaccount")
+    @PostMapping("/verifyAccount")
     public ResponseEntity<GeneralResponse> verifyOtp(@RequestBody VerificationRequest request) {
         return ResponseEntity.ok(service.verifyOtp(request));
     }
 
-    @GetMapping("/resendotp")
+    @GetMapping("/resendOtp")
     public ResponseEntity<GeneralResponse> resendotp(@RequestParam String email) {
         return ResponseEntity.ok(service.resendOtp(email));
     }
 
-    @GetMapping("/forgotpassword")
+    @GetMapping("/forgotPassword")
     public ResponseEntity<GeneralResponse> forgotpassword(@RequestParam String email) {
         return ResponseEntity.ok(service.forgotPassword(email));
     }
 
-    @PostMapping("/resetpassword")
+    @PostMapping("/resetPassword")
     public ResponseEntity<AuthenticationResponse> resetpassword(@RequestBody AuthenticationRequest request) {
         return ResponseEntity.ok(service.resetPassword(request));
     }
