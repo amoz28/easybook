@@ -9,6 +9,6 @@ RUN ls target  # Optional: Print the contents of the 'target' directory for debu
 # Stage 2: Create a runtime image
 FROM openjdk:17-alpine AS runtime
 WORKDIR /app
-COPY --from=build /app/target/my-application.jar ./my-application.jar
+COPY --from=build /app/target/EasyBook.jar ./EasyBook.jar
 EXPOSE 8080
-CMD ["java", "-jar", "my-application.jar"]
+CMD ["java", "-jar", "EasyBook.jar"]
