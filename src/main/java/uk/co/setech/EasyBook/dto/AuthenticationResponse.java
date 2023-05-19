@@ -15,5 +15,6 @@ public class AuthenticationResponse {
     private String lastname;
     private String email;
     private ArrayList<InvoiceSummary> extraData;
+    private List<InvoiceDto>recentInvoice;
     private String token;
 }

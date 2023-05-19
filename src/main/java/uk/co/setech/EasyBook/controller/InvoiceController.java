@@ -3,6 +3,7 @@ package uk.co.setech.EasyBook.controller;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
+import uk.co.setech.EasyBook.dto.CustomerDto;
 import uk.co.setech.EasyBook.dto.GeneralResponse;
 import uk.co.setech.EasyBook.dto.InvoiceDto;
 import uk.co.setech.EasyBook.service.InvoiceService;
@@ -29,6 +30,14 @@ public class InvoiceController {
     @GetMapping
     public ResponseEntity<List<InvoiceDto>> getAllInvoice() {
         return ResponseEntity.ok(invoiceService.getAllInvoice());
+    }
+
+    @GetMapping("/pages")
+    public ResponseEntity<List<InvoiceDto>> getAllInvoicesWithSize(
+            @RequestParam(defaultValue = "0") int pageNo,
+            @RequestParam(defaultValue = "20") int pageSize
+    ) {
+        return ResponseEntity.ok(invoiceService.getAllInvoicesWithSize(pageNo, pageSize));
     }
 
     @GetMapping("/getInvoiceById")

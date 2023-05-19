@@ -92,20 +92,19 @@ public class AuthenticationService {
                         && invoiceDto.getDuedate().isAfter(LocalDate.now()))
                 .mapToDouble(InvoiceDto::getTotal)
                 .sum();
+
         var totalPaidInvoices = invoiceService.getInvoiceDtos(request.getEmail()).stream()
                 .filter(invoiceDto -> invoiceDto.isInvoicePaid())
                 .mapToDouble(InvoiceDto::getTotal)
                 .sum();
 
+        System.out.println("------------");
+//        var recentInvoice = invoiceService.getAllInvoicesWithSize(0,5);
+        System.out.println("------------2");
+
         var jwtToken = jwtService.generateToken(user);
         var shortCutList = new ArrayList<InvoiceSummary>();
 
-        shortCutList.add(
-                InvoiceSummary.builder()
-                .title("Paid Invoices")
-                .image("wallet")
-                .amount(totalPaidInvoices)
-                .build());
         shortCutList.add(
                 InvoiceSummary.builder()
                         .title("Overdue Invoices")
@@ -113,11 +112,19 @@ public class AuthenticationService {
                         .amount(totalOverdueInvoices)
                         .build());
 
+        shortCutList.add(
+                InvoiceSummary.builder()
+                        .title("Paid Invoices")
+                        .image("wallet")
+                        .amount(totalPaidInvoices)
+                        .build());
+
         return AuthenticationResponse.builder()
                 .firstname(user.getFirstName())
                 .lastname(user.getLastName())
                 .email(request.getEmail())
                 .extraData(shortCutList)
+//                .recentInvoice(recentInvoice)
                 .token(jwtToken)
                 .build();
     }

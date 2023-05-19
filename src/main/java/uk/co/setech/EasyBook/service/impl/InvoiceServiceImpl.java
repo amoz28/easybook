@@ -2,6 +2,8 @@ package uk.co.setech.EasyBook.service.impl;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.BeanUtils;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -46,7 +48,7 @@ public class InvoiceServiceImpl implements InvoiceService {
         invoice.setUser(user);
         invoice = invoiceRepo.save(invoice);
 
-        return invoiceToDto(invoice, invoiceDto);
+        return invoiceToDto(invoice);
     }
 
     @Override
@@ -62,7 +64,7 @@ public class InvoiceServiceImpl implements InvoiceService {
 
         var savedInvoice = invoiceRepo.save(invoice);
 
-        return invoiceToDto(savedInvoice, invoiceDto);
+        return invoiceToDto(savedInvoice);
     }
 
     @Override
@@ -72,13 +74,27 @@ public class InvoiceServiceImpl implements InvoiceService {
     }
 
     @Override
+    public List<InvoiceDto> getAllInvoicesWithSize(int pageNo, int pageSize) {
+        var user = userRepo.findByEmail(getUserDetails().getEmail())
+                .orElseThrow(() ->
+                        new UsernameNotFoundException(String.format(USER_NOT_FOUND, getUserDetails().getEmail())));
+        Sort descendingSort = Sort.by(Sort.Direction.DESC, "id");
+
+        PageRequest pageable = PageRequest.of(pageNo, pageSize, descendingSort);
+
+        return invoiceRepo.findAllInvoiceByUser(user, pageable)
+                .map(this::invoiceToDto)
+                .getContent();
+    }
+
+    @Override
     public List<InvoiceDto> getInvoiceDtos(String email) {
         var user = userRepo.findByEmail(email)
                 .orElseThrow(() ->
                         new UsernameNotFoundException(String.format(USER_NOT_FOUND, email)));
 
         return invoiceRepo.findByUser(user).stream()
-                .map(invoice -> invoiceToDto(invoice, InvoiceDto.builder().build()))
+                .map(this::invoiceToDto)
                 .collect(Collectors.toList());
     }
 
@@ -89,8 +105,7 @@ public class InvoiceServiceImpl implements InvoiceService {
                         new UsernameNotFoundException(String.format(USER_NOT_FOUND, getUserDetails().getEmail())));
 
         return invoiceRepo.findByIdAndUser(Long.valueOf(invoiceId), user)
-                .map(invoice ->
-                        invoiceToDto(invoice, InvoiceDto.builder().build())
+                .map(this::invoiceToDto
                 )
                 .orElseThrow(() -> new IllegalArgumentException("Invoice Id not found"));
     }
@@ -109,9 +124,9 @@ public class InvoiceServiceImpl implements InvoiceService {
     }
 
 
-    private InvoiceDto invoiceToDto(Invoice invoice, InvoiceDto invoiceDto) {
+    private InvoiceDto invoiceToDto(Invoice invoice) {
+        var invoiceDto = InvoiceDto.builder().build();
         BeanUtils.copyProperties(invoice, invoiceDto);
-
         return invoiceDto;
     }
 
