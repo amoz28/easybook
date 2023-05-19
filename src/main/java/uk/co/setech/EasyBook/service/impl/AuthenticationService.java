@@ -133,20 +133,31 @@ public class AuthenticationService {
         System.out.println("=============");
         User user = userRepo.findByEmail(email)
                 .orElseThrow(() -> new UsernameNotFoundException(String.format(USER_NOT_FOUND, email)));
-        System.out.println("User found "+user.getLastName());
+        System.out.println("User found " + user.getLastName());
 
         String otp = String.valueOf(new Random().nextInt(9000) + 1000);
 
         var confOtp = confirmationOtpRepository.findByUser(user)
-                .orElseThrow(() -> new IllegalStateException("Invalid UserId"));
-        confOtp.setOtp(otp);
-        confOtp.setCreatedAt(LocalDateTime.now());
-        confOtp.setExpiresAt(LocalDateTime.now().plusMinutes(60 * 24));
-        confOtp.setUser(user);
+                .map(confirmOtp -> {
+                    confirmOtp.setOtp(otp);
+                    confirmOtp.setCreatedAt(LocalDateTime.now());
+                    confirmOtp.setExpiresAt(LocalDateTime.now().plusMinutes(60 * 24));
+                    confirmOtp.setUser(user);
+                    return confirmOtp;
+                })
+                .orElseGet(() -> {
+                            ConfirmOtp confirmationOtp = ConfirmOtp.builder()
+                                    .otp(otp)
+                                    .createdAt(LocalDateTime.now())
+                                    .expiresAt(LocalDateTime.now().plusMinutes(60 * 24))
+                                    .user(user)
+                                    .build();
+                            return confirmationOtp;
+                        }
+                );
         confirmationOtpRepository.save(confOtp);
 
-//        var otp = handleOtp(user);
-        System.out.println("OTP == "+otp);
+        System.out.println("OTP == " + otp);
         String subject = "Reset Password - OTP Verification";
         String message = "You are about to reset your password, use this OTP to complete the reset process " + otp;
         emailService.send(user.getFirstName(), user.getEmail(), message, subject);
@@ -160,11 +171,11 @@ public class AuthenticationService {
     public AuthenticationResponse resetPassword(AuthenticationRequest request) {
         User user = userRepo.findByEmail(request.getEmail())
                 .orElseThrow(() -> new UsernameNotFoundException(String.format(USER_NOT_FOUND, request.getEmail())));
-        System.out.println("User found "+user.getEmail());
+        System.out.println("User found " + user.getEmail());
 //      @TODO ENSURE USER ARE NOT ABLE TO RESET PASSWORD TWICE WITHOUT CALLING FORGOT PASSWORD TWICE
         var confOtp = confirmationOtpRepository.findByUser(user)
                 .orElseThrow(() -> new IllegalStateException("Invalid UserId"));
-        System.out.println("User Confirmed "+confOtp);
+        System.out.println("User Confirmed " + confOtp);
 
         if (LocalDateTime.now().isAfter(confOtp.getConfirmedAt().plusMinutes(5))) {
             throw new IllegalStateException("Request Timed Out please try again");
