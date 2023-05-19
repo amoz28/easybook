@@ -14,6 +14,17 @@ spring:
     database: mysql
     database-platform: org.hibernate.dialect.MySQLDialect
 
+#spring:
+#  datasource:
+#    url: jdbc:postgresql://dpg-chim0im4dad01anahmhg-a.oregon-postgres.render.com:5432/easybook
+#    username: easybook
+#    password: 704JtcUKoIGL3UuN4MyNkVwagPnQ8RGL
+#    driver-class-name: org.postgresql.Driver
+#  jpa:
+#    database-platform: org.hibernate.dialect.PostgreSQLDialect
+#    hibernate:
+#      ddl-auto: update
+#    show-sql: true
   mail:
     host: localhost
     port: 1025
@@ -34,8 +45,3 @@ spring:
 
 app:
   email: amoz4christ@gmail.com
-
-springdoc:
-  swagger-ui:
-    path=/swagger-ui:
-      html: /api/v1/auth/swagger

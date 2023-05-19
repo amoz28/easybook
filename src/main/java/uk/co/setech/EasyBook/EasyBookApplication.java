@@ -9,8 +9,8 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 @OpenAPIDefinition(info = @Info(title = "EasyBook API", version = "1.0", description = "API for the easy book invoicing system"))
 public class EasyBookApplication {
 
-	public static void main(String[] args) {
-		SpringApplication.run(EasyBookApplication.class, args);
-	}
+    public static void main(String[] args) {
+        SpringApplication.run(EasyBookApplication.class, args);
+    }
 
 }
