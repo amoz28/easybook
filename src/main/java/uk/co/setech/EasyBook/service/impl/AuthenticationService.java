@@ -61,6 +61,7 @@ public class AuthenticationService {
     }
 
     private String handleOtp(User user) {
+
         String otp = String.valueOf(new Random().nextInt(9000) + 1000);
 
         var confirmationOtp = ConfirmOtp.builder()
@@ -129,9 +130,23 @@ public class AuthenticationService {
     }
 
     public GeneralResponse forgotPassword(String email) {
+        System.out.println("=============");
         User user = userRepo.findByEmail(email)
                 .orElseThrow(() -> new UsernameNotFoundException(String.format(USER_NOT_FOUND, email)));
-        var otp = handleOtp(user);
+        System.out.println("User found "+user.getLastName());
+
+        String otp = String.valueOf(new Random().nextInt(9000) + 1000);
+
+        var confOtp = confirmationOtpRepository.findByUser(user)
+                .orElseThrow(() -> new IllegalStateException("Invalid UserId"));
+        confOtp.setOtp(otp);
+        confOtp.setCreatedAt(LocalDateTime.now());
+        confOtp.setExpiresAt(LocalDateTime.now().plusMinutes(60 * 24));
+        confOtp.setUser(user);
+        confirmationOtpRepository.save(confOtp);
+
+//        var otp = handleOtp(user);
+        System.out.println("OTP == "+otp);
         String subject = "Reset Password - OTP Verification";
         String message = "You are about to reset your password, use this OTP to complete the reset process " + otp;
         emailService.send(user.getFirstName(), user.getEmail(), message, subject);
