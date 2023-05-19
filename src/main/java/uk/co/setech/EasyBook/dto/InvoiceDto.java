@@ -13,7 +13,6 @@ import java.util.List;
 @Getter
 @Setter
 @SuperBuilder
-@RequiredArgsConstructor
 public class InvoiceDto {
     private Long id;
     private LocalDate duedate;

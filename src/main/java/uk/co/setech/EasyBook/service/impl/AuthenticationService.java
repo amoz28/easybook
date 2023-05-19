@@ -19,6 +19,7 @@ import uk.co.setech.EasyBook.service.InvoiceService;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
+import java.util.ArrayList;
 import java.util.Random;
 
 @Service
@@ -87,18 +88,36 @@ public class AuthenticationService {
                         new UsernameNotFoundException(String.format(USER_NOT_FOUND, request.getEmail())));
 
         var totalOverdueInvoices = invoiceService.getInvoiceDtos(request.getEmail()).stream()
-                .filter(invoiceDto -> invoiceDto.isInvoicePaid()
+                .filter(invoiceDto -> !invoiceDto.isInvoicePaid()
                         && invoiceDto.getDuedate().isAfter(LocalDate.now()))
+                .mapToDouble(InvoiceDto::getTotal)
+                .sum();
+        var totalPaidInvoices = invoiceService.getInvoiceDtos(request.getEmail()).stream()
+                .filter(invoiceDto -> invoiceDto.isInvoicePaid())
                 .mapToDouble(InvoiceDto::getTotal)
                 .sum();
 
         var jwtToken = jwtService.generateToken(user);
+        var shortCutList = new ArrayList<InvoiceSummary>();
+
+        shortCutList.add(
+                InvoiceSummary.builder()
+                .title("Paid Invoices")
+                .image("wallet")
+                .amount(totalPaidInvoices)
+                .build());
+        shortCutList.add(
+                InvoiceSummary.builder()
+                        .title("Overdue Invoices")
+                        .image("wallet")
+                        .amount(totalOverdueInvoices)
+                        .build());
 
         return AuthenticationResponse.builder()
                 .firstname(user.getFirstName())
                 .lastname(user.getLastName())
                 .email(request.getEmail())
-                .overdueInvoice(totalOverdueInvoices)
+                .extraData(shortCutList)
                 .token(jwtToken)
                 .build();
     }
