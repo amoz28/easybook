@@ -21,4 +21,5 @@ springdoc:
   show-actuator: true
 
 run:
-  interval:"0 0 0 * * ?"
+  interval: '-'
+#  interval: '0 0 0 * * ?'

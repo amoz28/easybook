@@ -3,12 +3,9 @@ package uk.co.setech.EasyBook.service.impl;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.BeanUtils;
 import org.springframework.data.domain.PageRequest;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 import uk.co.setech.EasyBook.dto.GeneralResponse;
-import uk.co.setech.EasyBook.dto.UserDto;
 import uk.co.setech.EasyBook.dto.CustomerDto;
 import uk.co.setech.EasyBook.repository.CustomerRepo;
 import uk.co.setech.EasyBook.model.Customer;
@@ -118,12 +115,5 @@ public class CustomerServiceImpl implements CustomerService {
         BeanUtils.copyProperties(customerDto, customer, Utils.getNullPropertyNames(customerDto));
 
         return customer;
-    }
-
-    private UserDto getUserDetails(){
-        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        UserDto userDto = UserDto.builder().build();
-        BeanUtils.copyProperties(auth.getPrincipal(), userDto);
-        return userDto;
     }
 }

@@ -2,12 +2,9 @@ package uk.co.setech.EasyBook.service.impl;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.BeanUtils;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 import uk.co.setech.EasyBook.dto.GeneralResponse;
-import uk.co.setech.EasyBook.dto.UserDto;
 import uk.co.setech.EasyBook.dto.EstimateDto;
 import uk.co.setech.EasyBook.model.Estimate;
 import uk.co.setech.EasyBook.repository.CustomerRepo;
@@ -19,6 +16,8 @@ import uk.co.setech.EasyBook.utils.Utils;
 
 import java.util.List;
 import java.util.stream.Collectors;
+
+import static uk.co.setech.EasyBook.utils.Utils.getCurrentUserDetails;
 
 @Service
 @RequiredArgsConstructor
@@ -32,9 +31,9 @@ public class EstimateServiceImpl implements EstimateService {
 
     @Override
     public EstimateDto createEstimate(EstimateDto estimateDto) {
-        var user = userRepo.findByEmail(getUserDetails().getEmail())
+        var user = userRepo.findByEmail(getCurrentUserDetails().getEmail())
                 .orElseThrow(()->
-                        new UsernameNotFoundException(String.format(USER_NOT_FOUND, getUserDetails().getEmail())));
+                        new UsernameNotFoundException(String.format(USER_NOT_FOUND, getCurrentUserDetails().getEmail())));
 
         var customer = customerRepo.findByEmailAndUser(estimateDto.getCustomerEmail(), user)
                 .orElseThrow(()-> new IllegalArgumentException("Customer does not exist"));
@@ -51,9 +50,9 @@ public class EstimateServiceImpl implements EstimateService {
 
     @Override
     public EstimateDto updateEstimate(EstimateDto estimateDto) {
-        var user = userRepo.findByEmail(getUserDetails().getEmail())
+        var user = userRepo.findByEmail(getCurrentUserDetails().getEmail())
                 .orElseThrow(()->
-                        new UsernameNotFoundException(String.format(USER_NOT_FOUND, getUserDetails().getEmail())));
+                        new UsernameNotFoundException(String.format(USER_NOT_FOUND, getCurrentUserDetails().getEmail())));
 
         var estimate = estimateRepo.findByIdAndUser(estimateDto.getId(), user)
                 .orElseThrow(()-> new IllegalStateException("Invalid invoice number"));
@@ -67,9 +66,9 @@ public class EstimateServiceImpl implements EstimateService {
 
     @Override
     public List<EstimateDto> getAllEstimate() {
-        var user = userRepo.findByEmail(getUserDetails().getEmail())
+        var user = userRepo.findByEmail(getCurrentUserDetails().getEmail())
                 .orElseThrow(()->
-                        new UsernameNotFoundException(String.format(USER_NOT_FOUND, getUserDetails().getEmail())));
+                        new UsernameNotFoundException(String.format(USER_NOT_FOUND, getCurrentUserDetails().getEmail())));
 
         return estimateRepo.findByUser(user).stream()
             .map(estimate -> estimateToDto(estimate, EstimateDto.builder().build()))
@@ -78,9 +77,9 @@ public class EstimateServiceImpl implements EstimateService {
 
     @Override
     public EstimateDto getEstimateById(String invoiceId) {
-        var user = userRepo.findByEmail(getUserDetails().getEmail())
+        var user = userRepo.findByEmail(getCurrentUserDetails().getEmail())
                 .orElseThrow(()->
-                        new UsernameNotFoundException(String.format(USER_NOT_FOUND, getUserDetails().getEmail())));
+                        new UsernameNotFoundException(String.format(USER_NOT_FOUND, getCurrentUserDetails().getEmail())));
 
         return estimateRepo.findByIdAndUser(Long.valueOf(invoiceId), user)
                 .map(estimate ->
@@ -91,9 +90,9 @@ public class EstimateServiceImpl implements EstimateService {
 
     @Override
     public GeneralResponse deleteEstimateById(String invoiceId) {
-        var user = userRepo.findByEmail(getUserDetails().getEmail())
+        var user = userRepo.findByEmail(getCurrentUserDetails().getEmail())
                 .orElseThrow(()->
-                        new UsernameNotFoundException(String.format(USER_NOT_FOUND, getUserDetails().getEmail())));
+                        new UsernameNotFoundException(String.format(USER_NOT_FOUND, getCurrentUserDetails().getEmail())));
 
         invoiceRepo.deleteByIdAndUser(Long.valueOf(invoiceId), user);
 
@@ -113,12 +112,5 @@ public class EstimateServiceImpl implements EstimateService {
         BeanUtils.copyProperties(estimateDto, estimate, Utils.getNullPropertyNames(estimateDto));
 
         return estimate;
-    }
-
-    private UserDto getUserDetails(){
-        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        UserDto userDto = UserDto.builder().build();
-        BeanUtils.copyProperties(auth.getPrincipal(), userDto);
-        return userDto;
     }
 }

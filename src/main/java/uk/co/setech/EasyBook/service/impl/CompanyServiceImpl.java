@@ -2,8 +2,6 @@ package uk.co.setech.EasyBook.service.impl;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.BeanUtils;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 import uk.co.setech.EasyBook.dto.UserDto;
@@ -21,10 +19,7 @@ public class CompanyServiceImpl implements CompanyService {
 
     @Override
     public UserDto getCompanyProfile() {
-        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        UserDto userDto = UserDto.builder().build();
-        BeanUtils.copyProperties(auth.getPrincipal(), userDto);
-        return userDto;
+        return Utils.gerUserDetails();
     }
 
     @Override

@@ -2,14 +2,12 @@ package uk.co.setech.EasyBook.service.impl;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.BeanUtils;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 import uk.co.setech.EasyBook.dto.GeneralResponse;
-import uk.co.setech.EasyBook.dto.UserDto;
 import uk.co.setech.EasyBook.dto.InvoiceDto;
 import uk.co.setech.EasyBook.email.EmailService;
+import uk.co.setech.EasyBook.model.Customer;
 import uk.co.setech.EasyBook.model.Invoice;
 import uk.co.setech.EasyBook.repository.CustomerRepo;
 import uk.co.setech.EasyBook.repository.InvoiceRepo;
@@ -34,7 +32,7 @@ public class InvoiceServiceImpl implements InvoiceService {
 
     @Override
     public InvoiceDto createInvoice(InvoiceDto invoiceDto) {
-        var user = userRepo.findByEmail(getUserDetails().getEmail())
+        var user = userRepo.findByEmail(Utils.getCurrentUserDetails().getEmail())
                 .orElseThrow(()->
                         new UsernameNotFoundException(String.format(USER_NOT_FOUND, getUserDetails().getEmail())));
 
@@ -115,13 +113,6 @@ public class InvoiceServiceImpl implements InvoiceService {
         return invoice;
     }
 
-    private UserDto getUserDetails(){
-        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        UserDto userDto = UserDto.builder().build();
-        BeanUtils.copyProperties(auth.getPrincipal(), userDto);
-        return userDto;
-    }
-
     @Override
     public void sendInvoiceReminder() {
         var user = userRepo.findByEmail(getUserDetails().getEmail())
@@ -130,13 +121,9 @@ public class InvoiceServiceImpl implements InvoiceService {
         var message = "Your invoice attached to this mail is still out standing please pay up";
         invoiceRepo
                 .findByUserAndIsInvoicePaidIsFalseAndLastReminderDateBefore(user, LocalDate.now())
-                .stream()
-                .map(invoice -> {
-                    emailService
-                            .send(invoice.getCustomer().getFirstname(),message,invoice.getCustomer().getEmail(),"INVOICE REMINDER");
-                    return null;
-                })
-                .collect(Collectors.toList());
-        ;
+                .forEach(invoice -> {
+                    Customer customer = invoice.getCustomer();
+                    emailService.send(customer.getFirstname(), message, customer.getEmail(),"INVOICE REMINDER");
+                });
     }
 }
