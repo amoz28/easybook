@@ -16,8 +16,7 @@ public class UserDto {
     private String email;
     private String phoneNumber;
     private String companyName;
-    @Lob
-    private byte[] companyLogo;
+    private String companyLogo;
     private String website;
     private String companyAddress;
     private String city;
