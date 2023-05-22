@@ -29,7 +29,6 @@ public class User implements UserDetails {
     private String email;
     private String phoneNumber;
     private String companyName;
-    @Lob
     @Column(columnDefinition="TEXT", length = 500000)
     private String companyLogo;
     private String website;
