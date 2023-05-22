@@ -3,7 +3,12 @@ spring:
     active: dev
   application:
     name: easybook-api
-
+  jpa:
+    properties:
+      hibernate:
+        jdbc:
+          lob:
+            non_contextual_creation: true
 logging:
   file:
     name: logs/${spring.application.name}.log

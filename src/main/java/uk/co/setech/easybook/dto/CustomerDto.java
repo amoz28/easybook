@@ -14,5 +14,6 @@ public class CustomerDto {
     private String address;
     private String companyname;
     private String postcode;
+    private String county;
     private String country;
 }

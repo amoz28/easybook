@@ -22,9 +22,11 @@ public class UserDto {
     private String companyAddress;
     private String city;
     private String county;
+    private String country;
     private String postCode;
     private Role role;
     private Boolean locked;
+
     private Boolean enabled;
 
 }

@@ -32,6 +32,8 @@ public class CompanyServiceImpl implements CompanyService {
         var user = userRepo.findByEmail(getCompanyProfile().getEmail())
                 .orElseThrow(() ->
                         new UsernameNotFoundException(String.format(USER_NOT_FOUND, getCompanyProfile().getEmail())));
+        System.out.println("Customer "+userDto.getCompanyLogo());
+        System.out.println("========Done========");
         User company = dtoToCompany(userDto, user);
 
         return companyToDto(userRepo.save(company));
