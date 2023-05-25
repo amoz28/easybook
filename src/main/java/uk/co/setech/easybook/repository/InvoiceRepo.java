@@ -3,6 +3,7 @@ package uk.co.setech.easybook.repository;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import uk.co.setech.easybook.model.Customer;
 import uk.co.setech.easybook.model.Invoice;
 import uk.co.setech.easybook.model.User;
 
@@ -21,6 +22,7 @@ public interface InvoiceRepo extends JpaRepository<Invoice, Long> {
     List<Invoice> findByUserAndIsInvoicePaidIsFalseAndLastReminderDateBefore(User user, LocalDate date);
 
     Page<Invoice> findAllInvoiceByUser(User user, Pageable pageable);
+    List<Invoice> findAllInvoiceByUserAndCustomer(User user, Customer customer);
 
 //    void updateIsInvoicePaidById(Long invoiceId, boolean isPaid);
 }

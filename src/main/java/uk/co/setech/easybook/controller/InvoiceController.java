@@ -44,6 +44,11 @@ public class InvoiceController {
         return ResponseEntity.ok(invoiceService.getInvoiceById(invoiceId));
     }
 
+    @GetMapping("/getInvoiceByEmail")
+    public ResponseEntity<List<InvoiceDto>> getInvoiceByCustomer(@RequestParam String email) {
+        return ResponseEntity.ok(invoiceService.getAllInvoiceByCustomer(email));
+    }
+
     @PutMapping("/addPayment")
     public ResponseEntity<GeneralResponse> addPayment(@RequestBody Long invoiceId) {
         return ResponseEntity.ok(invoiceService.addPayment(invoiceId));

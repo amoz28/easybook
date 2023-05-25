@@ -5,6 +5,7 @@ import jakarta.mail.internet.MimeMessage;
 import lombok.AllArgsConstructor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import org.springframework.core.io.ByteArrayResource;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.scheduling.annotation.Async;
@@ -30,6 +31,27 @@ public class EmailService implements EmailSender {
             helper.setFrom("amoz4christ@gmail.com");
             mailSender.send(mimeMessage);
         } catch (MessagingException e) {
+            LOGGER.error("failed to send email", e);
+            throw new IllegalStateException("failed to send email");
+        }
+    }
+
+    @Override
+    public void sendEmailWithAttachment(byte[] invoicePdf, String name, String to) throws MessagingException {
+        try {
+            MimeMessage message = mailSender.createMimeMessage();
+            MimeMessageHelper helper = new MimeMessageHelper(message, true);
+            // Set email properties
+            helper.setTo(to);
+            helper.setSubject("Invoice");
+            helper.setText("Dear " + name + ", Please find attached the invoice.");
+            helper.setFrom("amoz4christ@gmail.com");
+            // Attach the PDF invoice
+            helper.addAttachment("invoice.pdf", new ByteArrayResource(invoicePdf));
+
+            // Send the email
+            mailSender.send(message);
+        }catch (MessagingException e) {
             LOGGER.error("failed to send email", e);
             throw new IllegalStateException("failed to send email");
         }
