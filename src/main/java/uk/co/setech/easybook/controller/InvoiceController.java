@@ -39,12 +39,12 @@ public class InvoiceController {
         return ResponseEntity.ok(invoiceService.getAllInvoicesWithSize(pageNo, pageSize));
     }
 
-    @GetMapping("/getInvoiceById")
+    @GetMapping("/byId")
     public ResponseEntity<InvoiceDto> getInvoice(@RequestParam String invoiceId) {
         return ResponseEntity.ok(invoiceService.getInvoiceById(invoiceId));
     }
 
-    @GetMapping("/getInvoiceByEmail")
+    @GetMapping("/byEmail")
     public ResponseEntity<List<InvoiceDto>> getInvoiceByCustomer(@RequestParam String email) {
         return ResponseEntity.ok(invoiceService.getAllInvoiceByCustomer(email));
     }
