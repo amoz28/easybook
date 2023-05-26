@@ -16,6 +16,7 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 import uk.co.setech.easybook.dto.GeneralResponse;
 import uk.co.setech.easybook.dto.InvoiceDto;
+import uk.co.setech.easybook.dto.ItemsDto;
 import uk.co.setech.easybook.dto.UserDto;
 import uk.co.setech.easybook.email.EmailService;
 import uk.co.setech.easybook.exception.CustomException;
@@ -86,12 +87,7 @@ public class InvoiceServiceImpl implements InvoiceService {
         document.open();
 
         // Add content to the PDF
-
-        // Add logo
-//        Path imagePath = Paths.get("C:\\Users\\Longbridge\\Downloads\\LOrtler.jpg");
-//        byte[] imageBytes = Files.readAllBytes(imagePath);
         byte[] imageBytes = Base64.getDecoder().decode(user.getCompanyLogo());
-//        byte[] imageBytes = user.getCompanyLogo().getBytes();
         Image logo = Image.getInstance(imageBytes);
         logo.scaleToFit(150, 150);
         logo.setAlignment(Element.ALIGN_CENTER);
@@ -99,14 +95,15 @@ public class InvoiceServiceImpl implements InvoiceService {
 
         // Add sender details
         Font senderFont = FontFactory.getFont(FontFactory.HELVETICA, 12);
+        Font companyFont = FontFactory.getFont(FontFactory.HELVETICA, 16);
         Paragraph senderDetails = new Paragraph();
-        senderDetails.add(new Paragraph(user.getCompanyName(), senderFont));
-        senderDetails.add(new Paragraph(user.getCompanyAddress(), senderFont));
+        senderDetails.add(new Paragraph(user.getCompanyName(), companyFont));
+        senderDetails.add(new Paragraph("Address: "+user.getCompanyAddress(), senderFont));
         senderDetails.add(new Paragraph(user.getCity(), senderFont));
         senderDetails.add(new Paragraph(user.getPostCode(), senderFont));
         senderDetails.add(new Paragraph(user.getPhoneNumber(), senderFont));
         senderDetails.add(new Paragraph(user.getEmail(), senderFont));
-        senderDetails.setAlignment(Element.ALIGN_RIGHT);
+        senderDetails.setAlignment(Element.ALIGN_CENTER);
         document.add(senderDetails);
 
         // Add invoice number
@@ -159,7 +156,7 @@ public class InvoiceServiceImpl implements InvoiceService {
         cell5.setHorizontalAlignment(Element.ALIGN_CENTER);
         table.addCell(cell5);
 
-        int serialNumber = 0;
+        int serialNumber = 1;
         for (var invoiceItem : invoice.getItems()) {
             table.addCell(String.valueOf(serialNumber++));
             table.addCell(invoiceItem.getDescription());
@@ -167,28 +164,6 @@ public class InvoiceServiceImpl implements InvoiceService {
             table.addCell(String.valueOf(invoiceItem.getQuantity()));
             table.addCell(String.valueOf(invoiceItem.getPrice()));
         }
-//        invoice.getItems().stream()
-//                        .map(invoiceItem -> {
-//                            table.addCell(String.valueOf(serialNumber.getAndIncrement()));
-//                            table.addCell(invoiceItem.getDescription());
-//                            table.addCell(String.valueOf(invoiceItem.getPrice()));
-//                            table.addCell(String.valueOf(invoiceItem.getQuantity()));
-//                            table.addCell(String.valueOf(invoiceItem.getPrice()));
-//                            return table;
-//                        })
-//                         .collect(Collectors.toList());
-
-//        table.addCell("1");
-//        table.addCell("Product 1");
-//        table.addCell("$10");
-//        table.addCell("2");
-//        table.addCell("$20");
-//
-//        table.addCell("2");
-//        table.addCell("Product 2");
-//        table.addCell("$15");
-//        table.addCell("1");
-//        table.addCell("$15");
 
         document.add(table);
 
@@ -321,6 +296,16 @@ public class InvoiceServiceImpl implements InvoiceService {
     private InvoiceDto invoiceToDto(Invoice invoice) {
         var invoiceDto = InvoiceDto.builder().build();
         BeanUtils.copyProperties(invoice, invoiceDto);
+        var invoiceItems = invoice.getItems().stream()
+                .map(itemsDto -> ItemsDto.builder()
+                        .id(Math.toIntExact(itemsDto.getId()))
+                        .service(itemsDto.getService())
+                        .description(itemsDto.getDescription())
+                        .quantity(itemsDto.getQuantity())
+                        .price(itemsDto.getPrice())
+                        .build())
+                .collect(Collectors.toList());
+        invoiceDto.setItems(invoiceItems);
         return invoiceDto;
     }
 
