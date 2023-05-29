@@ -7,7 +7,6 @@ import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 import uk.co.setech.easybook.dto.CustomerDto;
 import uk.co.setech.easybook.dto.GeneralResponse;
-import uk.co.setech.easybook.dto.UserDto;
 import uk.co.setech.easybook.model.Customer;
 import uk.co.setech.easybook.repository.CustomerRepo;
 import uk.co.setech.easybook.repository.UserRepo;
@@ -16,6 +15,8 @@ import uk.co.setech.easybook.utils.Utils;
 
 import java.util.List;
 import java.util.stream.Collectors;
+
+import static uk.co.setech.easybook.utils.Utils.getCurrentUserDetails;
 
 @Service
 @RequiredArgsConstructor
@@ -27,24 +28,26 @@ public class CustomerServiceImpl implements CustomerService {
 
     @Override
     public GeneralResponse createCustomer(CustomerDto customerDto) {
-        var user = userRepo.findByEmail(getUserDetails().getEmail())
+        String email = getCurrentUserDetails().getEmail();
+        var user = userRepo.findByEmail(email)
                 .orElseThrow(() ->
-                        new UsernameNotFoundException(String.format(USER_NOT_FOUND, getUserDetails().getEmail())));
+                        new UsernameNotFoundException(String.format(USER_NOT_FOUND, email)));
 
         var customer = dtoToCustomer(customerDto, new Customer());
         customer.setUser(user);
         customerRepo.save(customer);
 
         return GeneralResponse.builder()
-                .message("User Successfuly Created")
+                .message("User Successfully Created")
                 .build();
     }
 
     @Override
     public CustomerDto getCustomerByEmail(String email) {
-        var user = userRepo.findByEmail(getUserDetails().getEmail())
+        String currentUserEmail = getCurrentUserDetails().getEmail();
+        var user = userRepo.findByEmail(currentUserEmail)
                 .orElseThrow(() ->
-                        new UsernameNotFoundException(String.format(USER_NOT_FOUND, getUserDetails().getEmail())));
+                        new UsernameNotFoundException(String.format(USER_NOT_FOUND, currentUserEmail)));
 
         return customerRepo.findByEmailAndUser(email, user)
                 .map(this::customerToDto)
@@ -53,9 +56,10 @@ public class CustomerServiceImpl implements CustomerService {
 
     @Override
     public List<CustomerDto> getAllCustomers(int pageNo, int pageSize) {
-        var user = userRepo.findByEmail(getUserDetails().getEmail())
+        String email = getCurrentUserDetails().getEmail();
+        var user = userRepo.findByEmail(email)
                 .orElseThrow(() ->
-                        new UsernameNotFoundException(String.format(USER_NOT_FOUND, getUserDetails().getEmail())));
+                        new UsernameNotFoundException(String.format(USER_NOT_FOUND, email)));
 
         PageRequest pageable = PageRequest.of(pageNo, pageSize);
 
@@ -66,9 +70,10 @@ public class CustomerServiceImpl implements CustomerService {
 
     @Override
     public List<CustomerDto> getAllCustomer() {
-        var user = userRepo.findByEmail(getUserDetails().getEmail())
+        String email = getCurrentUserDetails().getEmail();
+        var user = userRepo.findByEmail(email)
                 .orElseThrow(() ->
-                        new UsernameNotFoundException(String.format(USER_NOT_FOUND, getUserDetails().getEmail())));
+                        new UsernameNotFoundException(String.format(USER_NOT_FOUND, email)));
 
         return customerRepo.findAllByUser(user).stream()
                 .map(this::customerToDto)
@@ -77,14 +82,15 @@ public class CustomerServiceImpl implements CustomerService {
 
     @Override
     public CustomerDto updateCustomer(CustomerDto customerDto) {
-        var user = userRepo.findByEmail(getUserDetails().getEmail())
+        String email = getCurrentUserDetails().getEmail();
+        var user = userRepo.findByEmail(email)
                 .orElseThrow(() ->
-                        new UsernameNotFoundException(String.format(USER_NOT_FOUND, getUserDetails().getEmail())));
+                        new UsernameNotFoundException(String.format(USER_NOT_FOUND, email)));
 
         var customer = customerRepo.findByEmailAndUser(customerDto.getEmail(), user)
                 .orElseThrow(() -> new IllegalStateException("Customer not found"));
 
-        customer = dtoToCustomer(customerDto, customer);
+        dtoToCustomer(customerDto, customer);
         var savedCustomer = customerRepo.save(customer);
 
         return customerToDto(savedCustomer);
@@ -92,9 +98,10 @@ public class CustomerServiceImpl implements CustomerService {
 
     @Override
     public GeneralResponse deleteCustomerByEmail(String email) {
-        var user = userRepo.findByEmail(getUserDetails().getEmail())
+        String currentUserEmail = getCurrentUserDetails().getEmail();
+        var user = userRepo.findByEmail(currentUserEmail)
                 .orElseThrow(() ->
-                        new UsernameNotFoundException(String.format(USER_NOT_FOUND, getUserDetails().getEmail())));
+                        new UsernameNotFoundException(String.format(USER_NOT_FOUND, currentUserEmail)));
 
         var customer = customerRepo.findByEmailAndUser(email, user)
                 .orElseThrow(() -> new IllegalStateException("Customer not found"));

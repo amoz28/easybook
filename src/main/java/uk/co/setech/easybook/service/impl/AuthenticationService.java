@@ -35,8 +35,8 @@ public class AuthenticationService {
     private final InvoiceService invoiceService;
 
     private final EmailService emailService;
-    private final ConfirmationOtpService confirmationOtpService;
-    private final ConfirmOtpRepo confirmationOtpRepository;
+    private final ConfirmOtpService confirmOtpService;
+    private final ConfirmOtpRepo confirmOtpRepo;
 
     public GeneralResponse register(RegisterRequest request) {
         var user = User.builder()
@@ -57,7 +57,7 @@ public class AuthenticationService {
 
         return GeneralResponse
                 .builder()
-                .message("Account successfuly created, an OTP has been sent to your account for verification")
+                .message("Account successfully created, an OTP has been sent to your account for verification")
                 .build();
     }
 
@@ -72,7 +72,7 @@ public class AuthenticationService {
                 .user(user)
                 .build();
 
-        confirmationOtpRepository.save(confirmationOtp);
+        confirmOtpRepo.save(confirmationOtp);
         return otp;
     }
 
@@ -94,13 +94,11 @@ public class AuthenticationService {
                 .sum();
 
         var totalPaidInvoices = invoiceService.getInvoiceDtos(request.getEmail()).stream()
-                .filter(invoiceDto -> invoiceDto.isInvoicePaid())
+                .filter(InvoiceDto::isInvoicePaid)
                 .mapToDouble(InvoiceDto::getTotal)
                 .sum();
 
-        System.out.println("------------");
 //        var recentInvoice = invoiceService.getAllInvoicesWithSize(0,5);
-        System.out.println("------------2");
 
         var jwtToken = jwtService.generateToken(user);
         var shortCutList = new ArrayList<InvoiceSummary>();
@@ -133,7 +131,7 @@ public class AuthenticationService {
         var user = userRepo.findByEmail(request.email())
                 .orElseThrow(() -> new UsernameNotFoundException(String.format(USER_NOT_FOUND, request.email())));
 
-        String confirmationMsg = confirmationOtpService.verifyOtpByUserId(request.otp(), user);
+        String confirmationMsg = confirmOtpService.verifyOtpByUserId(request.otp(), user);
         user.setEnabled(Boolean.TRUE);
         userRepo.save(user);
 
@@ -146,7 +144,7 @@ public class AuthenticationService {
         User user = userRepo.findByEmail(email)
                 .orElseThrow(() -> new UsernameNotFoundException(String.format(USER_NOT_FOUND, email)));
 
-        var otp = confirmationOtpService.getOtp(user);
+        var otp = confirmOtpService.getOtp(user);
         String subject = "Resend OTP";
         String message = "Here is the OTP you requested for to complete the process " + otp;
         emailService.send(user.getFirstName(), email, message, subject);
@@ -156,14 +154,12 @@ public class AuthenticationService {
     }
 
     public GeneralResponse forgotPassword(String email) {
-        System.out.println("=============");
         User user = userRepo.findByEmail(email)
                 .orElseThrow(() -> new UsernameNotFoundException(String.format(USER_NOT_FOUND, email)));
-        System.out.println("User found " + user.getLastName());
 
         String otp = String.valueOf(new Random().nextInt(9000) + 1000);
 
-        var confOtp = confirmationOtpRepository.findByUser(user)
+        var confOtp = confirmOtpRepo.findByUser(user)
                 .map(confirmOtp -> {
                     confirmOtp.setOtp(otp);
                     confirmOtp.setCreatedAt(LocalDateTime.now());
@@ -172,18 +168,16 @@ public class AuthenticationService {
                     return confirmOtp;
                 })
                 .orElseGet(() -> {
-                            ConfirmOtp confirmationOtp = ConfirmOtp.builder()
-                                    .otp(otp)
-                                    .createdAt(LocalDateTime.now())
-                                    .expiresAt(LocalDateTime.now().plusMinutes(60 * 24))
-                                    .user(user)
-                                    .build();
-                            return confirmationOtp;
+                    return ConfirmOtp.builder()
+                            .otp(otp)
+                            .createdAt(LocalDateTime.now())
+                            .expiresAt(LocalDateTime.now().plusMinutes(60 * 24))
+                            .user(user)
+                            .build();
                         }
                 );
-        confirmationOtpRepository.save(confOtp);
+        confirmOtpRepo.save(confOtp);
 
-        System.out.println("OTP == " + otp);
         String subject = "Reset Password - OTP Verification";
         String message = "You are about to reset your password, use this OTP to complete the reset process " + otp;
         emailService.send(user.getFirstName(), user.getEmail(), message, subject);
@@ -197,12 +191,9 @@ public class AuthenticationService {
     public AuthenticationResponse resetPassword(AuthenticationRequest request) {
         User user = userRepo.findByEmail(request.getEmail())
                 .orElseThrow(() -> new UsernameNotFoundException(String.format(USER_NOT_FOUND, request.getEmail())));
-        System.out.println("User found " + user.getEmail());
 //      @TODO ENSURE USER ARE NOT ABLE TO RESET PASSWORD TWICE WITHOUT CALLING FORGOT PASSWORD TWICE
-        var confOtp = confirmationOtpRepository.findByUser(user)
+        var confOtp = confirmOtpRepo.findByUser(user)
                 .orElseThrow(() -> new IllegalStateException("Invalid UserId"));
-        System.out.println("User Confirmed " + confOtp);
-
         if (LocalDateTime.now().isAfter(confOtp.getConfirmedAt().plusMinutes(5))) {
             throw new IllegalStateException("Request Timed Out please try again");
         }

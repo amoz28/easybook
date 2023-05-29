@@ -20,8 +20,6 @@ public class UserController {
 
     @PutMapping()
     public ResponseEntity<UserDto> updateUserDetails(@RequestBody UserDto userDto) {
-        System.out.println("=============Got ==== here==============");
-
         return ResponseEntity.ok(companyService.updateCompanyProfile(userDto));
     }
 }

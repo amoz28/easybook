@@ -10,8 +10,6 @@ import uk.co.setech.easybook.repository.UserRepo;
 import uk.co.setech.easybook.service.CompanyService;
 import uk.co.setech.easybook.utils.Utils;
 
-import java.util.Arrays;
-
 @Service
 @RequiredArgsConstructor
 public class CompanyServiceImpl implements CompanyService {
@@ -21,20 +19,15 @@ public class CompanyServiceImpl implements CompanyService {
 
     @Override
     public UserDto getCompanyProfile() {
-        return Utils.gerUserDetails();
+        return Utils.getCurrentUserDetails();
     }
 
     @Override
     public UserDto updateCompanyProfile(UserDto userDto) {
-        System.out.println("=============Got here==============");
-
         var user = userRepo.findByEmail(getCompanyProfile().getEmail())
                 .orElseThrow(() ->
                         new UsernameNotFoundException(String.format(USER_NOT_FOUND, getCompanyProfile().getEmail())));
-        System.out.println("Customer "+ userDto.getCompanyLogo());
-        System.out.println("=============Done==============");
         User company = dtoToCompany(userDto, user);
-
         return companyToDto(userRepo.save(company));
     }
 
