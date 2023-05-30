@@ -316,7 +316,7 @@ public class InvoiceServiceImpl implements InvoiceService {
                     var invoiceItem = new InvoiceItem();
                     invoiceItem.setService(itemsDto.getService());
                     invoiceItem.setDescription(itemsDto.getDescription());
-                    invoiceItem.setQuantity(itemsDto.getQuantity());
+                    invoiceItem.setQuantity(itemsDto.getQuantity()==null?itemsDto.getQuantity(): 1);
                     invoiceItem.setPrice(itemsDto.getPrice());
                     invoiceItem.setInvoice(invoice);
                     return invoiceItem;
