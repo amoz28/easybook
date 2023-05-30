@@ -6,6 +6,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.Setter;
 import lombok.experimental.SuperBuilder;
 import uk.co.setech.easybook.model.Customer;
+import uk.co.setech.easybook.model.InvoiceItem;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -25,6 +26,7 @@ public class InvoiceDto {
     private double tax;
     private double total;
     private List<ItemsDto> items;
+//    private List<InvoiceItem> items;
     private String customerEmail;
     private boolean isInvoicePaid;
     @JsonIgnore
