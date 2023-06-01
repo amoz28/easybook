@@ -13,7 +13,9 @@ public class InvoiceItem {
     private Long id;
     private String service;
     private String description;
+    @Column(nullable = false)
     private double price;
+    @Column(nullable = false)
     private int quantity;
 
     @ManyToOne

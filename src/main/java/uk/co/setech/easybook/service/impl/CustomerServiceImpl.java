@@ -3,13 +3,9 @@ package uk.co.setech.easybook.service.impl;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.BeanUtils;
 import org.springframework.data.domain.PageRequest;
-import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 import uk.co.setech.easybook.dto.CustomerDto;
 import uk.co.setech.easybook.dto.GeneralResponse;
-import uk.co.setech.easybook.dto.UserDto;
 import uk.co.setech.easybook.model.Customer;
 import uk.co.setech.easybook.repository.CustomerRepo;
 import uk.co.setech.easybook.repository.UserRepo;
@@ -19,74 +15,67 @@ import uk.co.setech.easybook.utils.Utils;
 import java.util.List;
 import java.util.stream.Collectors;
 
+import static uk.co.setech.easybook.utils.Utils.getCurrentUserDetails;
+
 @Service
 @RequiredArgsConstructor
 public class CustomerServiceImpl implements CustomerService {
-    private static final String USER_NOT_FOUND = "User with email: %s Not Found";
 
     private final CustomerRepo customerRepo;
     private final UserRepo userRepo;
 
     @Override
     public GeneralResponse createCustomer(CustomerDto customerDto) {
-        var user = userRepo.findByEmail(getUserDetails().getEmail())
-                .orElseThrow(() ->
-                        new UsernameNotFoundException(String.format(USER_NOT_FOUND, getUserDetails().getEmail())));
-
+        long userId = getCurrentUserDetails().getId();
         var customer = dtoToCustomer(customerDto, new Customer());
-        customer.setUser(user);
+        customer.setUserId(userId);
         customerRepo.save(customer);
 
         return GeneralResponse.builder()
-                .message("User Successfuly Created")
+                .message("User Successfully Created")
                 .build();
     }
 
     @Override
     public CustomerDto getCustomerByEmail(String email) {
-        var user = userRepo.findByEmail(getUserDetails().getEmail())
-                .orElseThrow(() ->
-                        new UsernameNotFoundException(String.format(USER_NOT_FOUND, getUserDetails().getEmail())));
+        long userId = getCurrentUserDetails().getId();
 
-        return customerRepo.findByEmailAndUser(email, user)
+        return customerRepo.findByEmailAndUserId(email, userId)
+                .map(this::customerToDto)
+                .orElseThrow(() -> new IllegalStateException("Customer not found"));
+    }
+
+    @Override
+    public CustomerDto getCustomerById(Integer id) {
+        return customerRepo.findById(id)
                 .map(this::customerToDto)
                 .orElseThrow(() -> new IllegalStateException("Customer not found"));
     }
 
     @Override
     public List<CustomerDto> getAllCustomers(int pageNo, int pageSize) {
-        var user = userRepo.findByEmail(getUserDetails().getEmail())
-                .orElseThrow(() ->
-                        new UsernameNotFoundException(String.format(USER_NOT_FOUND, getUserDetails().getEmail())));
-
+        long userId = getCurrentUserDetails().getId();
         PageRequest pageable = PageRequest.of(pageNo, pageSize);
-
-        return customerRepo.findAllByUser(user, pageable)
+        return customerRepo.findAllByUserId(userId, pageable)
                 .map(this::customerToDto)
                 .getContent();
     }
 
     @Override
     public List<CustomerDto> getAllCustomer() {
-        var user = userRepo.findByEmail(getUserDetails().getEmail())
-                .orElseThrow(() ->
-                        new UsernameNotFoundException(String.format(USER_NOT_FOUND, getUserDetails().getEmail())));
-
-        return customerRepo.findAllByUser(user).stream()
+        long userId = getCurrentUserDetails().getId();
+        return customerRepo.findAllByUserId(userId).stream()
                 .map(this::customerToDto)
                 .collect(Collectors.toList());
     }
 
     @Override
     public CustomerDto updateCustomer(CustomerDto customerDto) {
-        var user = userRepo.findByEmail(getUserDetails().getEmail())
-                .orElseThrow(() ->
-                        new UsernameNotFoundException(String.format(USER_NOT_FOUND, getUserDetails().getEmail())));
-
-        var customer = customerRepo.findByEmailAndUser(customerDto.getEmail(), user)
+        long userId = getCurrentUserDetails().getId();
+        var customer = customerRepo.findByEmailAndUserId(customerDto.getEmail(), userId)
                 .orElseThrow(() -> new IllegalStateException("Customer not found"));
 
-        customer = dtoToCustomer(customerDto, customer);
+        dtoToCustomer(customerDto, customer);
         var savedCustomer = customerRepo.save(customer);
 
         return customerToDto(savedCustomer);
@@ -94,11 +83,8 @@ public class CustomerServiceImpl implements CustomerService {
 
     @Override
     public GeneralResponse deleteCustomerByEmail(String email) {
-        var user = userRepo.findByEmail(getUserDetails().getEmail())
-                .orElseThrow(() ->
-                        new UsernameNotFoundException(String.format(USER_NOT_FOUND, getUserDetails().getEmail())));
-
-        var customer = customerRepo.findByEmailAndUser(email, user)
+        long userId = getCurrentUserDetails().getId();
+        var customer = customerRepo.findByEmailAndUserId(email, userId)
                 .orElseThrow(() -> new IllegalStateException("Customer not found"));
         customerRepo.delete(customer);
 
@@ -110,20 +96,11 @@ public class CustomerServiceImpl implements CustomerService {
     private CustomerDto customerToDto(Customer customer) {
         CustomerDto customerDto = CustomerDto.builder().build();
         BeanUtils.copyProperties(customer, customerDto, Utils.getNullPropertyNames(customer));
-
         return customerDto;
     }
 
     private Customer dtoToCustomer(CustomerDto customerDto, Customer customer) {
         BeanUtils.copyProperties(customerDto, customer, Utils.getNullPropertyNames(customerDto));
-
         return customer;
-    }
-
-    private UserDto getUserDetails() {
-        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        UserDto userDto = UserDto.builder().build();
-        BeanUtils.copyProperties(auth.getPrincipal(), userDto);
-        return userDto;
     }
 }

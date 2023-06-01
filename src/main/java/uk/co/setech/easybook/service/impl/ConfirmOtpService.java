@@ -11,7 +11,7 @@ import java.util.Random;
 
 @Service
 @RequiredArgsConstructor
-public class ConfirmationOtpService {
+public class ConfirmOtpService {
 
     private final ConfirmOtpRepo confirmationOtpRepository;
 

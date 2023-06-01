@@ -25,5 +25,7 @@ springdoc:
     path: /swagger-ui
   show-actuator: true
 
-run:
-  interval:"0 0 0 * * ?"
+invoice:
+  reminder:
+    interval: '-'
+#    interval: '0 0 0 * * ?'

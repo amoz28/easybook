@@ -3,9 +3,8 @@ package uk.co.setech.easybook.repository;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
-import uk.co.setech.easybook.model.Customer;
+import uk.co.setech.easybook.enums.InvoiceType;
 import uk.co.setech.easybook.model.Invoice;
-import uk.co.setech.easybook.model.User;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -13,16 +12,19 @@ import java.util.Optional;
 
 public interface InvoiceRepo extends JpaRepository<Invoice, Long> {
 
-    Optional<Invoice> findByIdAndUser(Long id, User user);
+    Optional<Invoice> findByIdAndUserId(Long id, long userId);
 
-    List<Invoice> findByUser(User user);
+    List<Invoice> findByUserIdAndType(long userId, InvoiceType type);
 
-    void deleteByIdAndUser(Long id, User user);
+    List<Invoice> findByUserId(long userId);
 
-    List<Invoice> findByUserAndIsInvoicePaidIsFalseAndLastReminderDateBefore(User user, LocalDate date);
+    void deleteByIdAndUserId(Long id, long userId);
 
-    Page<Invoice> findAllInvoiceByUser(User user, Pageable pageable);
-    List<Invoice> findAllInvoiceByUserAndCustomer(User user, Customer customer);
+    List<Invoice> findByIsInvoicePaidIsFalseAndLastReminderDateBefore(LocalDate date);
 
-//    void updateIsInvoicePaidById(Long invoiceId, boolean isPaid);
+    Page<Invoice> findAllInvoiceByUserId(long userId, Pageable pageable);
+
+    Page<Invoice> findAllInvoiceByUserIdAndType(long userId, Pageable pageable, InvoiceType type);
+
+    List<Invoice> findAllInvoiceByUserIdAndCustomerId(long userId, long customerId);
 }

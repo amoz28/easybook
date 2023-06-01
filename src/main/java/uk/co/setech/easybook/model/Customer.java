@@ -22,7 +22,6 @@ public class Customer {
     private String companyname;
     private String postcode;
     private String country;
-    @ManyToOne
-    @JoinColumn(name = "user_id")
-    private User user;
+    @Column(nullable = false)
+    private long userId;
 }
