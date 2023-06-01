@@ -9,7 +9,7 @@ public class ItemsDto {
     private Integer id;
     private String service;
     private String description;
-    private Integer quantity;
+    private int quantity;
     private double price;
 
 }
