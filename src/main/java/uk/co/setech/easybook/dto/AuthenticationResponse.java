@@ -15,6 +15,7 @@ public class AuthenticationResponse {
     private String lastname;
     private String email;
     private String phoneNumber;
+    private String companyName;
     private String companyLogo;
     private String address;
     private String postCode;

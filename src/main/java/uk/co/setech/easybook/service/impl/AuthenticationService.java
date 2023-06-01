@@ -136,8 +136,9 @@ public class AuthenticationService {
                 .postCode(user.getPostCode())
                 .country(user.getCountry())
                 .companyLogo(user.getCompanyLogo())
+                .companyName(user.getCompanyName())
                 .extraData(shortCutList)
-//                .recentInvoice(recentInvoice) TODO
+//                .recentInvoice(recentInvoice)
                 .token(jwtToken)
                 .build();
     }
@@ -192,6 +193,7 @@ public class AuthenticationService {
                 );
         confirmOtpRepo.save(confOtp);
 
+        System.out.println("OTP == " + otp);
         String subject = "Reset Password - OTP Verification";
         String message = "You are about to reset your password, use this OTP to complete the reset process " + otp;
         emailService.send(user.getFirstName(), user.getEmail(), message, subject);
