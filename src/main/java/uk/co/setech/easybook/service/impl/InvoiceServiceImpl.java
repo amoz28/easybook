@@ -2,129 +2,103 @@ package uk.co.setech.easybook.service.impl;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.BeanUtils;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
-import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
+import uk.co.setech.easybook.dto.CustomerDto;
 import uk.co.setech.easybook.dto.GeneralResponse;
 import uk.co.setech.easybook.dto.InvoiceDto;
 import uk.co.setech.easybook.email.EmailService;
+import uk.co.setech.easybook.enums.InvoiceType;
 import uk.co.setech.easybook.exception.CustomException;
-import uk.co.setech.easybook.model.Customer;
 import uk.co.setech.easybook.model.Invoice;
-import uk.co.setech.easybook.repository.CustomerRepo;
 import uk.co.setech.easybook.repository.InvoiceRepo;
-import uk.co.setech.easybook.repository.UserRepo;
+import uk.co.setech.easybook.service.CustomerService;
 import uk.co.setech.easybook.service.InvoiceService;
 
 import java.time.LocalDate;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import static uk.co.setech.easybook.utils.Utils.*;
 import static uk.co.setech.easybook.utils.Utils.getCurrentUserDetails;
+import static uk.co.setech.easybook.utils.Utils.getNullPropertyNames;
 
 @Service
 @RequiredArgsConstructor
 public class InvoiceServiceImpl implements InvoiceService {
-    private static final String USER_NOT_FOUND = "User with email: %s Not Found";
 
     private final InvoiceRepo invoiceRepo;
-    private final CustomerRepo customerRepo;
-    private final UserRepo userRepo;
-
     private final EmailService emailService;
+    private final CustomerService customerService;
 
     @Override
     public InvoiceDto createInvoice(InvoiceDto invoiceDto) {
-        String email = getCurrentUserDetails().getEmail();
-        var user = userRepo.findByEmail(email)
-                .orElseThrow(()->
-                        new UsernameNotFoundException(String.format(USER_NOT_FOUND, email)));
-
-        var customer = customerRepo.findByEmailAndUser(invoiceDto.getCustomerEmail(), user)
-                .orElseThrow(() -> new IllegalArgumentException("Customer does not exist"));
-        invoiceDto.setCustomer(customer);
-
+        Integer customerId = invoiceDto.getCustomerId();
+        var customer = customerService.getCustomerById(customerId);
+        invoiceDto.setCustomerId(customer.getId());
         var invoice = dtoToInvoice(invoiceDto, Invoice.builder().build());
-        invoice.setUser(user);
+        long userId = getCurrentUserDetails().getId();
+        invoice.setUserId(userId);
         invoice = invoiceRepo.save(invoice);
-
         return invoiceToDto(invoice);
     }
 
     @Override
     public InvoiceDto updateInvoice(InvoiceDto invoiceDto) {
-        String email = getCurrentUserDetails().getEmail();
-        var user = userRepo.findByEmail(email)
-                .orElseThrow(() ->
-                        new UsernameNotFoundException(String.format(USER_NOT_FOUND, email)));
-
-        var invoice = invoiceRepo.findByIdAndUser(invoiceDto.getId(), user)
+        long userId = getCurrentUserDetails().getId();
+        var invoice = invoiceRepo.findByIdAndUserId(invoiceDto.getId(), userId)
                 .orElseThrow(() -> new IllegalStateException("Invalid invoice number"));
-
         dtoToInvoice(invoiceDto, invoice);
-
         var savedInvoice = invoiceRepo.save(invoice);
-
         return invoiceToDto(savedInvoice);
     }
 
     @Override
-    public List<InvoiceDto> getAllInvoice() {
-        String email = getCurrentUserDetails().getEmail();
-        return getInvoiceDtos(email);
+    public List<InvoiceDto> getAllInvoice(String type) {
+        long userId = getCurrentUserDetails().getId();
+        InvoiceType invoiceType = type == null ? null : InvoiceType.valueOf(type);
+        return getInvoiceDtos(userId, invoiceType);
     }
 
     @Override
-    public List<InvoiceDto> getAllInvoicesWithSize(int pageNo, int pageSize) {
-        String email = getCurrentUserDetails().getEmail();
-        var user = userRepo.findByEmail(email)
-                .orElseThrow(() ->
-                        new UsernameNotFoundException(String.format(USER_NOT_FOUND, email)));
+    public List<InvoiceDto> getAllInvoicesWithSize(int pageNo, int pageSize, String type) {
+        long userId = getCurrentUserDetails().getId();
         Sort descendingSort = Sort.by(Sort.Direction.DESC, "id");
-
         PageRequest pageable = PageRequest.of(pageNo, pageSize, descendingSort);
-
-        return invoiceRepo.findAllInvoiceByUser(user, pageable)
+        Page<Invoice> invoices = type == null
+                ? invoiceRepo.findAllInvoiceByUserId(userId, pageable)
+                : invoiceRepo.findAllInvoiceByUserIdAndType(userId, pageable, InvoiceType.valueOf(type));
+        return invoices
                 .map(this::invoiceToDto)
                 .getContent();
     }
 
     @Override
-    public List<InvoiceDto> getInvoiceDtos(String email) {
-        var user = userRepo.findByEmail(email)
-                .orElseThrow(() ->
-                        new UsernameNotFoundException(String.format(USER_NOT_FOUND, email)));
-
-        return invoiceRepo.findByUser(user).stream()
-            .map(this::invoiceToDto)
-            .collect(Collectors.toList());
+    public List<InvoiceDto> getInvoiceDtos(long userId, InvoiceType invoiceType) {
+        List<Invoice> allUserInvoices = invoiceType == null
+                ? invoiceRepo.findByUserId(userId)
+                :invoiceRepo.findByUserIdAndType(userId, invoiceType);
+        return allUserInvoices
+                .stream()
+                .map(this::invoiceToDto)
+                .collect(Collectors.toList());
     }
 
     @Override
-    public InvoiceDto getInvoiceById(String invoiceId) {
-        String email = getCurrentUserDetails().getEmail();
-        var user = userRepo.findByEmail(email)
-                .orElseThrow(() ->
-                        new UsernameNotFoundException(String.format(USER_NOT_FOUND, email)));
-
-        return invoiceRepo.findByIdAndUser(Long.valueOf(invoiceId), user)
+    public InvoiceDto getInvoiceById(long invoiceId) {
+        long userId = getCurrentUserDetails().getId();
+        return invoiceRepo.findByIdAndUserId(invoiceId, userId)
                 .map(this::invoiceToDto
                 )
                 .orElseThrow(() -> new CustomException(HttpStatus.NOT_FOUND, "Invoice Id not found"));
     }
 
     @Override
-    public GeneralResponse deleteInvoiceById(String invoiceId) {
-        String email = getCurrentUserDetails().getEmail();
-        var user = userRepo.findByEmail(email)
-                .orElseThrow(() ->
-                        new UsernameNotFoundException(String.format(USER_NOT_FOUND, email)));
-
-        invoiceRepo.deleteByIdAndUser(Long.valueOf(invoiceId), user);
-
+    public GeneralResponse deleteInvoiceById(long invoiceId) {
+        long userId = getCurrentUserDetails().getId();
+        invoiceRepo.deleteByIdAndUserId(invoiceId, userId);
         return GeneralResponse.builder()
                 .message("Invoice deleted")
                 .build();
@@ -144,16 +118,12 @@ public class InvoiceServiceImpl implements InvoiceService {
 
     @Override
     public void sendInvoiceReminder() {
-        String email = getCurrentUserDetails().getEmail();
-        var user = userRepo.findByEmail(email)
-                .orElseThrow(() ->
-                        new UsernameNotFoundException(String.format(USER_NOT_FOUND, email)));
-        var message = "Your invoice attached to this mail is still out standing please pay up";
+        var message = "Your invoice attached to this mail is still outstanding please pay up";
         invoiceRepo
-                .findByUserAndIsInvoicePaidIsFalseAndLastReminderDateBefore(user, LocalDate.now())
+                .findByIsInvoicePaidIsFalseAndLastReminderDateBefore(LocalDate.now())
                 .forEach(invoice -> {
-                    Customer customer = invoice.getCustomer();
-                    emailService.send(customer.getFirstname(), message, customer.getEmail(),"INVOICE REMINDER");
+                    CustomerDto customer = customerService.getCustomerById(invoice.getCustomerId());
+                    emailService.send(customer.getFirstname(), customer.getEmail(), message, "INVOICE REMINDER");
                 });
     }
 

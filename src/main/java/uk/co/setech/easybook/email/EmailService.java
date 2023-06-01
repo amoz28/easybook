@@ -2,20 +2,22 @@ package uk.co.setech.easybook.email;
 
 import jakarta.mail.MessagingException;
 import jakarta.mail.internet.MimeMessage;
-import lombok.AllArgsConstructor;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
+@Slf4j
 @Service
-@AllArgsConstructor
+@RequiredArgsConstructor
 public class EmailService implements EmailSender {
 
-    private final static Logger LOGGER = LoggerFactory.getLogger(EmailService.class);
     private final JavaMailSender mailSender;
+    @Value("${mail.sender:amoz4christ@gmail.com}")
+    private String senderEmail;
 
     @Override
     @Async
@@ -27,10 +29,10 @@ public class EmailService implements EmailSender {
             helper.setText(message, true);
             helper.setTo(to);
             helper.setSubject(subject);
-            helper.setFrom("amoz4christ@gmail.com");
+            helper.setFrom(senderEmail);
             mailSender.send(mimeMessage);
         } catch (MessagingException e) {
-            LOGGER.error("failed to send email", e);
+            log.error("failed to send email", e);
             throw new IllegalStateException("failed to send email");
         }
     }

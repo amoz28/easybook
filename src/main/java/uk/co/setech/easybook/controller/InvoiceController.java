@@ -27,20 +27,21 @@ public class InvoiceController {
     }
 
     @GetMapping
-    public ResponseEntity<List<InvoiceDto>> getAllInvoice() {
-        return ResponseEntity.ok(invoiceService.getAllInvoice());
+    public ResponseEntity<List<InvoiceDto>> getAllInvoice(@RequestParam("type") String type) {
+        return ResponseEntity.ok(invoiceService.getAllInvoice(type));
     }
 
     @GetMapping("/pages")
     public ResponseEntity<List<InvoiceDto>> getAllInvoicesWithSize(
             @RequestParam(defaultValue = "0") int pageNo,
-            @RequestParam(defaultValue = "20") int pageSize
+            @RequestParam(defaultValue = "20") int pageSize,
+            @RequestParam("type") String type
     ) {
-        return ResponseEntity.ok(invoiceService.getAllInvoicesWithSize(pageNo, pageSize));
+        return ResponseEntity.ok(invoiceService.getAllInvoicesWithSize(pageNo, pageSize, type));
     }
 
     @GetMapping("/getInvoiceById")
-    public ResponseEntity<InvoiceDto> getInvoice(@RequestParam String invoiceId) {
+    public ResponseEntity<InvoiceDto> getInvoice(@RequestParam Long invoiceId) {
         return ResponseEntity.ok(invoiceService.getInvoiceById(invoiceId));
     }
 
@@ -50,7 +51,7 @@ public class InvoiceController {
     }
 
     @DeleteMapping
-    public ResponseEntity<GeneralResponse> deleteInvoice(@RequestParam String invoiceId) {
+    public ResponseEntity<GeneralResponse> deleteInvoice(@RequestParam Long invoiceId) {
         return ResponseEntity.ok(invoiceService.deleteInvoiceById(invoiceId));
     }
 }

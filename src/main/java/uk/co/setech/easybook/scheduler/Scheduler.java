@@ -11,7 +11,7 @@ import uk.co.setech.easybook.service.InvoiceService;
 @RequiredArgsConstructor
 public class Scheduler {
     private final InvoiceService invoiceService;
-    @Scheduled(cron = "${run.interval}")
+    @Scheduled(cron = "${invoice.reminder.interval}")
     public void reminderScheduler(){
         log.info(" ===== Reminder service started =====");
         invoiceService.sendInvoiceReminder();

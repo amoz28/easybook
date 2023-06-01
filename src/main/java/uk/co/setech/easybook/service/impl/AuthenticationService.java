@@ -10,6 +10,7 @@ import org.springframework.stereotype.Service;
 import uk.co.setech.easybook.commons.security.JwtService;
 import uk.co.setech.easybook.dto.*;
 import uk.co.setech.easybook.email.EmailService;
+import uk.co.setech.easybook.enums.InvoiceType;
 import uk.co.setech.easybook.enums.Role;
 import uk.co.setech.easybook.model.ConfirmOtp;
 import uk.co.setech.easybook.model.User;
@@ -87,18 +88,20 @@ public class AuthenticationService {
                 .orElseThrow(() ->
                         new UsernameNotFoundException(String.format(USER_NOT_FOUND, request.getEmail())));
 
-        var totalOverdueInvoices = invoiceService.getInvoiceDtos(request.getEmail()).stream()
+        var totalOverdueInvoices = invoiceService.getInvoiceDtos(user.getId(), InvoiceType.INVOICE)
+                .stream()
                 .filter(invoiceDto -> !invoiceDto.isInvoicePaid()
                         && invoiceDto.getDuedate().isAfter(LocalDate.now()))
                 .mapToDouble(InvoiceDto::getTotal)
                 .sum();
 
-        var totalPaidInvoices = invoiceService.getInvoiceDtos(request.getEmail()).stream()
+        var totalPaidInvoices = invoiceService.getInvoiceDtos(user.getId(), InvoiceType.INVOICE)
+                .stream()
                 .filter(InvoiceDto::isInvoicePaid)
                 .mapToDouble(InvoiceDto::getTotal)
                 .sum();
 
-//        var recentInvoice = invoiceService.getAllInvoicesWithSize(0,5);
+//        var recentInvoice = invoiceService.getAllInvoicesWithSize(0,5); TODO
 
         var jwtToken = jwtService.generateToken(user);
         var shortCutList = new ArrayList<InvoiceSummary>();
@@ -122,7 +125,7 @@ public class AuthenticationService {
                 .lastname(user.getLastName())
                 .email(request.getEmail())
                 .extraData(shortCutList)
-//                .recentInvoice(recentInvoice)
+//                .recentInvoice(recentInvoice) TODO
                 .token(jwtToken)
                 .build();
     }
@@ -167,14 +170,12 @@ public class AuthenticationService {
                     confirmOtp.setUser(user);
                     return confirmOtp;
                 })
-                .orElseGet(() -> {
-                    return ConfirmOtp.builder()
-                            .otp(otp)
-                            .createdAt(LocalDateTime.now())
-                            .expiresAt(LocalDateTime.now().plusMinutes(60 * 24))
-                            .user(user)
-                            .build();
-                        }
+                .orElseGet(() -> ConfirmOtp.builder()
+                        .otp(otp)
+                        .createdAt(LocalDateTime.now())
+                        .expiresAt(LocalDateTime.now().plusMinutes(60 * 24))
+                        .user(user)
+                        .build()
                 );
         confirmOtpRepo.save(confOtp);
 

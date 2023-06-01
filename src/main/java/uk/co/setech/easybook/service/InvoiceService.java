@@ -2,6 +2,7 @@ package uk.co.setech.easybook.service;
 
 import uk.co.setech.easybook.dto.GeneralResponse;
 import uk.co.setech.easybook.dto.InvoiceDto;
+import uk.co.setech.easybook.enums.InvoiceType;
 
 import java.util.List;
 
@@ -10,14 +11,14 @@ public interface InvoiceService {
 
     InvoiceDto updateInvoice(InvoiceDto customerDto);
 
-    List<InvoiceDto> getAllInvoice();
+    List<InvoiceDto> getAllInvoice(String type);
 
-    List<InvoiceDto> getAllInvoicesWithSize(int pageNo, int pageSize);
+    List<InvoiceDto> getAllInvoicesWithSize(int pageNo, int pageSize, String type);
 
-    List<InvoiceDto> getInvoiceDtos(String email);
-    InvoiceDto getInvoiceById(String invoiceId);
+    List<InvoiceDto> getInvoiceDtos(long userId, InvoiceType invoiceType);
+    InvoiceDto getInvoiceById(long invoiceId);
 
-    GeneralResponse deleteInvoiceById(String email);
+    GeneralResponse deleteInvoiceById(long invoiceId);
 
     void sendInvoiceReminder();
 
