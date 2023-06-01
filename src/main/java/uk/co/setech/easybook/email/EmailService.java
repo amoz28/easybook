@@ -37,6 +37,27 @@ public class EmailService implements EmailSender {
         }
     }
 
+    @Override
+    public void sendEmailWithAttachment(byte[] invoicePdf, String name, String to) throws MessagingException {
+        try {
+            MimeMessage message = mailSender.createMimeMessage();
+            MimeMessageHelper helper = new MimeMessageHelper(message, true);
+            // Set email properties
+            helper.setTo(to);
+            helper.setSubject("Invoice");
+            helper.setText("Dear " + name + ", Please find attached the invoice.");
+            helper.setFrom("amoz4christ@gmail.com");
+            // Attach the PDF invoice
+            helper.addAttachment("invoice.pdf", new ByteArrayResource(invoicePdf));
+
+            // Send the email
+            mailSender.send(message);
+        }catch (MessagingException e) {
+            LOGGER.error("failed to send email", e);
+            throw new IllegalStateException("failed to send email");
+        }
+    }
+
     private String buildEmail(String name, String otp) {
 
         return "<div style=\"font-family:Helvetica,Arial,sans-serif;font-size:16px;margin:0;color:#0b0c0c\">\n" +

@@ -40,9 +40,14 @@ public class InvoiceController {
         return ResponseEntity.ok(invoiceService.getAllInvoicesWithSize(pageNo, pageSize, type));
     }
 
-    @GetMapping("/getInvoiceById")
+    @GetMapping("/byId")
     public ResponseEntity<InvoiceDto> getInvoice(@RequestParam Long invoiceId) {
         return ResponseEntity.ok(invoiceService.getInvoiceById(invoiceId));
+    }
+
+    @GetMapping("/byEmail")
+    public ResponseEntity<List<InvoiceDto>> getInvoiceByCustomer(@RequestParam String email) {
+        return ResponseEntity.ok(invoiceService.getAllInvoiceByCustomer(email));
     }
 
     @PutMapping("/addPayment")

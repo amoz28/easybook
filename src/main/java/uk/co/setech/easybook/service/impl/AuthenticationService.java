@@ -2,13 +2,20 @@ package uk.co.setech.easybook.service.impl;
 
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.cache.annotation.CachePut;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import uk.co.setech.easybook.commons.security.JwtService;
-import uk.co.setech.easybook.dto.*;
+import uk.co.setech.easybook.dto.AuthenticationRequest;
+import uk.co.setech.easybook.dto.AuthenticationResponse;
+import uk.co.setech.easybook.dto.GeneralResponse;
+import uk.co.setech.easybook.dto.InvoiceDto;
+import uk.co.setech.easybook.dto.InvoiceSummary;
+import uk.co.setech.easybook.dto.RegisterRequest;
+import uk.co.setech.easybook.dto.VerificationRequest;
 import uk.co.setech.easybook.email.EmailService;
 import uk.co.setech.easybook.enums.InvoiceType;
 import uk.co.setech.easybook.enums.Role;
@@ -124,6 +131,11 @@ public class AuthenticationService {
                 .firstname(user.getFirstName())
                 .lastname(user.getLastName())
                 .email(request.getEmail())
+                .phoneNumber(user.getPhoneNumber())
+                .address(user.getCompanyAddress())
+                .postCode(user.getPostCode())
+                .country(user.getCountry())
+                .companyLogo(user.getCompanyLogo())
                 .extraData(shortCutList)
 //                .recentInvoice(recentInvoice) TODO
                 .token(jwtToken)
@@ -156,6 +168,7 @@ public class AuthenticationService {
                 .build();
     }
 
+    @CachePut(value = "otpCache", key = "#userId")
     public GeneralResponse forgotPassword(String email) {
         User user = userRepo.findByEmail(email)
                 .orElseThrow(() -> new UsernameNotFoundException(String.format(USER_NOT_FOUND, email)));
@@ -188,6 +201,44 @@ public class AuthenticationService {
                 .message("An otp has been sent to your email for verification")
                 .build();
     }
+//    public GeneralResponse forgotPassword(String email) {
+//        System.out.println("=============");
+//        User user = userRepo.findByEmail(email)
+//                .orElseThrow(() -> new UsernameNotFoundException(String.format(USER_NOT_FOUND, email)));
+//        System.out.println("User found " + user.getLastName());
+//
+//        String otp = String.valueOf(new Random().nextInt(9000) + 1000);
+//
+//        var confOtp = confirmationOtpRepository.findByUser(user)
+//                .map(confirmOtp -> {
+//                    confirmOtp.setOtp(otp);
+//                    confirmOtp.setCreatedAt(LocalDateTime.now());
+//                    confirmOtp.setExpiresAt(LocalDateTime.now().plusMinutes(60 * 24));
+//                    confirmOtp.setUser(user);
+//                    return confirmOtp;
+//                })
+//                .orElseGet(() -> {
+//                            ConfirmOtp confirmationOtp = ConfirmOtp.builder()
+//                                    .otp(otp)
+//                                    .createdAt(LocalDateTime.now())
+//                                    .expiresAt(LocalDateTime.now().plusMinutes(60 * 24))
+//                                    .user(user)
+//                                    .build();
+//                            return confirmationOtp;
+//                        }
+//                );
+//        confirmationOtpRepository.save(confOtp);
+//
+//        System.out.println("OTP == " + otp);
+//        String subject = "Reset Password - OTP Verification";
+//        String message = "You are about to reset your password, use this OTP to complete the reset process " + otp;
+//        emailService.send(user.getFirstName(), user.getEmail(), message, subject);
+//
+//        //       @TODO sendMail(email, message, subject );
+//        return GeneralResponse.builder()
+//                .message("An otp has been sent to your email for verification")
+//                .build();
+//    }
 
     public AuthenticationResponse resetPassword(AuthenticationRequest request) {
         User user = userRepo.findByEmail(request.getEmail())

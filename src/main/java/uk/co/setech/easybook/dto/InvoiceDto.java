@@ -24,6 +24,7 @@ public class InvoiceDto {
     private double tax;
     private double total;
     private List<ItemsDto> items;
+//    private List<InvoiceItem> items;
     private String customerEmail;
     private String invoiceInfo;
     private boolean isInvoicePaid;
