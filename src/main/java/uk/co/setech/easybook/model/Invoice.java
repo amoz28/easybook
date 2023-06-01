@@ -27,6 +27,8 @@ public class Invoice {
     private double tax;
     private double total;
     private boolean isInvoicePaid;
+    private String type;
+    private String recordDescription;
 
     @OneToMany(cascade = CascadeType.ALL)
     @JoinColumn(name = "invoice_id")

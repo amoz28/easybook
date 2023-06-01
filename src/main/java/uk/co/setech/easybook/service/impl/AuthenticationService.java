@@ -100,9 +100,7 @@ public class AuthenticationService {
                 .mapToDouble(InvoiceDto::getTotal)
                 .sum();
 
-        System.out.println("------------");
 //        var recentInvoice = invoiceService.getAllInvoicesWithSize(0,5);
-        System.out.println("------------2");
 
         var jwtToken = jwtService.generateToken(user);
         var shortCutList = new ArrayList<InvoiceSummary>();
@@ -130,6 +128,7 @@ public class AuthenticationService {
                 .postCode(user.getPostCode())
                 .country(user.getCountry())
                 .companyLogo(user.getCompanyLogo())
+                .companyName(user.getCompanyName())
                 .extraData(shortCutList)
 //                .recentInvoice(recentInvoice)
                 .token(jwtToken)

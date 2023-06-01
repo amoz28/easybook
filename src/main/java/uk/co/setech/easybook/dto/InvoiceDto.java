@@ -26,9 +26,10 @@ public class InvoiceDto {
     private double tax;
     private double total;
     private List<ItemsDto> items;
-//    private List<InvoiceItem> items;
     private String customerEmail;
     private boolean isInvoicePaid;
     @JsonIgnore
     private Customer customer;
+    private String type;
+    private String recordDescription;
 }
