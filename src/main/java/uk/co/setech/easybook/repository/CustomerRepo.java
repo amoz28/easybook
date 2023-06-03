@@ -10,11 +10,11 @@ import java.util.Optional;
 
 public interface CustomerRepo extends JpaRepository<Customer, Integer> {
 
+    Optional<Customer> findByIdAndUserId(long id, long userId);
+
     Optional<Customer> findByEmailAndUserId(String email, long userId);
 
     Page<Customer> findAllByUserId(long userId, Pageable pageable);
 
     List<Customer> findAllByUserId(long userId);
-
-    void deleteByEmail(String email);
 }

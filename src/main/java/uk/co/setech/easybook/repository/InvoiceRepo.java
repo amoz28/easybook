@@ -3,6 +3,7 @@ package uk.co.setech.easybook.repository;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.transaction.annotation.Transactional;
 import uk.co.setech.easybook.enums.InvoiceType;
 import uk.co.setech.easybook.model.Invoice;
 
@@ -18,6 +19,7 @@ public interface InvoiceRepo extends JpaRepository<Invoice, Long> {
 
     List<Invoice> findByUserId(long userId);
 
+    @Transactional
     void deleteByIdAndUserId(Long id, long userId);
 
     List<Invoice> findByIsInvoicePaidIsFalseAndLastReminderDateBefore(LocalDate date);

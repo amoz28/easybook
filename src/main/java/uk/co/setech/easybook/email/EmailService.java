@@ -6,10 +6,12 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.core.io.ByteArrayResource;
+import org.springframework.http.HttpStatus;
 import org.springframework.mail.javamail.JavaMailSender;
 import org.springframework.mail.javamail.MimeMessageHelper;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
+import uk.co.setech.easybook.exception.CustomException;
 
 @Slf4j
 @Service
@@ -34,28 +36,24 @@ public class EmailService implements EmailSender {
             mailSender.send(mimeMessage);
         } catch (MessagingException e) {
             log.error("failed to send email", e);
-            throw new IllegalStateException("failed to send email");
+            throw new CustomException(HttpStatus.INTERNAL_SERVER_ERROR, "failed to send email");
         }
     }
 
     @Override
-    public void sendEmailWithAttachment(byte[] invoicePdf, String name, String to) throws MessagingException {
+    public void sendEmailWithAttachment(byte[] invoicePdf, String name, String to) {
         try {
             MimeMessage message = mailSender.createMimeMessage();
             MimeMessageHelper helper = new MimeMessageHelper(message, true);
-            // Set email properties
             helper.setTo(to);
             helper.setSubject("Invoice");
             helper.setText("Dear " + name + ", Please find attached the invoice.");
-            helper.setFrom("amoz4christ@gmail.com");
-            // Attach the PDF invoice
+            helper.setFrom(senderEmail);
             helper.addAttachment("invoice.pdf", new ByteArrayResource(invoicePdf));
-
-            // Send the email
             mailSender.send(message);
         }catch (MessagingException e) {
             log.error("failed to send email", e);
-            throw new IllegalStateException("failed to send email");
+            throw new CustomException(HttpStatus.INTERNAL_SERVER_ERROR, "failed to send email");
         }
     }
 

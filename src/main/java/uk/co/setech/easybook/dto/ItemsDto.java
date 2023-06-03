@@ -1,9 +1,11 @@
 package uk.co.setech.easybook.dto;
 
 import lombok.Builder;
-import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
 
-@Data
+@Getter
+@Setter
 @Builder
 public class ItemsDto {
     private Integer id;
@@ -11,5 +13,4 @@ public class ItemsDto {
     private String description;
     private int quantity;
     private double price;
-
 }

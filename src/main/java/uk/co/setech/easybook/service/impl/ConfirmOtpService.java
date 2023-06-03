@@ -1,7 +1,9 @@
 package uk.co.setech.easybook.service.impl;
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
+import uk.co.setech.easybook.exception.CustomException;
 import uk.co.setech.easybook.model.ConfirmOtp;
 import uk.co.setech.easybook.model.User;
 import uk.co.setech.easybook.repository.ConfirmOtpRepo;
@@ -17,10 +19,10 @@ public class ConfirmOtpService {
 
     public String verifyOtpByUserId(String otp, User userId) {
         var otpCheck = confirmationOtpRepository.findByOtpAndUser(otp, userId)
-                .orElseThrow(() -> new IllegalCallerException("Invalid OTP Provided"));
+                .orElseThrow(() -> new CustomException(HttpStatus.BAD_REQUEST, "Invalid OTP Provided"));
 
         if (LocalDateTime.now().isAfter(otpCheck.getExpiresAt())) {
-            throw new IllegalStateException("The OTP you entered has expired");
+            throw new CustomException(HttpStatus.BAD_REQUEST, "The OTP you entered has expired");
         }
 
         otpCheck.setConfirmedAt(LocalDateTime.now());
@@ -32,7 +34,7 @@ public class ConfirmOtpService {
 
     public String getOtp(User user) {
         var otpCheck = confirmationOtpRepository.findByUser(user)
-                .orElseThrow(() -> new IllegalCallerException("Invalid User"));
+                .orElseThrow(() -> new CustomException(HttpStatus.NOT_FOUND, "Invalid User"));
 
         if (LocalDateTime.now().isAfter(otpCheck.getExpiresAt())) {
             persistOtp(otpCheck);

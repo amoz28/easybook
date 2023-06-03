@@ -2,12 +2,22 @@ package uk.co.setech.easybook.controller;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
+import org.springframework.web.bind.annotation.DeleteMapping;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RestController;
 import uk.co.setech.easybook.dto.CustomerDto;
 import uk.co.setech.easybook.dto.GeneralResponse;
 import uk.co.setech.easybook.service.CustomerService;
 
 import java.util.List;
+
+import static uk.co.setech.easybook.utils.Utils.getCurrentUserDetails;
 
 @RestController
 @RequiredArgsConstructor
@@ -47,7 +57,16 @@ public class CustomerController {
     public ResponseEntity<CustomerDto> getCustomerDetails(
             @RequestParam String email
     ) {
-        return ResponseEntity.ok(customerService.getCustomerByEmail(email));
+        Integer userId = getCurrentUserDetails().getId();
+        return ResponseEntity.ok(customerService.getCustomerByEmailAndUserId(email, userId));
+    }
+
+    @GetMapping("/{id}")
+    public ResponseEntity<CustomerDto> getCustomerDetails(
+            @PathVariable Long id
+    ) {
+        Integer userId = getCurrentUserDetails().getId();
+        return ResponseEntity.ok(customerService.getCustomerByIdAndUserId(id, userId));
     }
 
     @DeleteMapping

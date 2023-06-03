@@ -27,7 +27,7 @@ public class InvoiceController {
     }
 
     @GetMapping
-    public ResponseEntity<List<InvoiceDto>> getAllInvoice(@RequestParam("type") String type) {
+    public ResponseEntity<List<InvoiceDto>> getAllInvoice(@RequestParam(value = "type", required = false) String type) {
         return ResponseEntity.ok(invoiceService.getAllInvoice(type));
     }
 
@@ -35,19 +35,19 @@ public class InvoiceController {
     public ResponseEntity<List<InvoiceDto>> getAllInvoicesWithSize(
             @RequestParam(defaultValue = "0") int pageNo,
             @RequestParam(defaultValue = "20") int pageSize,
-            @RequestParam("type") String type
+            @RequestParam(value = "type", required = false) String type
     ) {
         return ResponseEntity.ok(invoiceService.getAllInvoicesWithSize(pageNo, pageSize, type));
     }
 
-    @GetMapping("/byId")
-    public ResponseEntity<InvoiceDto> getInvoice(@RequestParam Long invoiceId) {
-        return ResponseEntity.ok(invoiceService.getInvoiceById(invoiceId));
+    @GetMapping("/{id}")
+    public ResponseEntity<InvoiceDto> getInvoice(@PathVariable Long id) {
+        return ResponseEntity.ok(invoiceService.getInvoiceById(id));
     }
 
     @GetMapping("/byEmail")
     public ResponseEntity<List<InvoiceDto>> getInvoiceByCustomer(@RequestParam String email) {
-        return ResponseEntity.ok(invoiceService.getAllInvoiceByCustomer(email));
+        return ResponseEntity.ok(invoiceService.getAllInvoiceByCustomerEmail(email));
     }
 
     @PutMapping("/addPayment")
@@ -55,8 +55,8 @@ public class InvoiceController {
         return ResponseEntity.ok(invoiceService.addPayment(invoiceId));
     }
 
-    @DeleteMapping
-    public ResponseEntity<GeneralResponse> deleteInvoice(@RequestParam Long invoiceId) {
-        return ResponseEntity.ok(invoiceService.deleteInvoiceById(invoiceId));
+    @DeleteMapping("/{id}")
+    public ResponseEntity<GeneralResponse> deleteInvoice(@PathVariable Long id) {
+        return ResponseEntity.ok(invoiceService.deleteInvoiceById(id));
     }
 }
