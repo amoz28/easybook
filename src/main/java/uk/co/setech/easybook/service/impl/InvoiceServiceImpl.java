@@ -1,5 +1,6 @@
 package uk.co.setech.easybook.service.impl;
 
+import com.itextpdf.text.*;
 import com.itextpdf.text.pdf.PdfPCell;
 import com.itextpdf.text.pdf.PdfPTable;
 import com.itextpdf.text.pdf.PdfWriter;
@@ -19,25 +20,21 @@ import uk.co.setech.easybook.dto.UserDto;
 import uk.co.setech.easybook.email.EmailService;
 import uk.co.setech.easybook.enums.InvoiceType;
 import uk.co.setech.easybook.exception.CustomException;
-import uk.co.setech.easybook.model.Customer;
 import uk.co.setech.easybook.model.Invoice;
 import uk.co.setech.easybook.model.InvoiceItem;
-import uk.co.setech.easybook.model.User;
-import uk.co.setech.easybook.repository.CustomerRepo;
 import uk.co.setech.easybook.repository.InvoiceRepo;
 import uk.co.setech.easybook.service.CustomerService;
 import uk.co.setech.easybook.service.InvoiceService;
+import uk.co.setech.easybook.utils.Utils;
 
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.time.LocalDate;
 import java.util.Base64;
 import java.util.List;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.stream.Collectors;
 
 import static uk.co.setech.easybook.utils.Utils.getCurrentUserDetails;
-import static uk.co.setech.easybook.utils.Utils.getNullPropertyNames;
 
 @Service
 @RequiredArgsConstructor
@@ -54,8 +51,8 @@ public class InvoiceServiceImpl implements InvoiceService {
         var customer = customerService.getCustomerById(customerId);
         invoiceDto.setCustomerId(customer.getId());
         var invoice = dtoToInvoice(invoiceDto, Invoice.builder().build());
-        long userId = getCurrentUserDetails().getId();
-        invoice.setUserId(userId);
+        var user = getCurrentUserDetails();
+        invoice.setUserId(user.getId());
         invoice = invoiceRepo.save(invoice);
 
         try {
@@ -71,7 +68,7 @@ public class InvoiceServiceImpl implements InvoiceService {
         return invoiceToDto(invoice);
     }
 
-    private byte[] generateInvoicePdf(Invoice invoice, User user, Customer customer) throws DocumentException, IOException {
+    private byte[] generateInvoicePdf(Invoice invoice, UserDto user, CustomerDto customer) throws DocumentException, IOException {
         // Create a new PDF document
         Document document = new Document();
         ByteArrayOutputStream outputStream = new ByteArrayOutputStream();
@@ -180,7 +177,7 @@ public class InvoiceServiceImpl implements InvoiceService {
         vatCell.setHorizontalAlignment(Element.ALIGN_RIGHT);
         summaryTable.addCell(vatCell);
 
-        PdfPCell vatValueCell = new PdfPCell(new Phrase(invoice.getVat(), summaryFont));
+        PdfPCell vatValueCell = new PdfPCell(new Phrase(String.valueOf(invoice.getVat()), summaryFont));
         vatValueCell.setHorizontalAlignment(Element.ALIGN_RIGHT);
         summaryTable.addCell(vatValueCell);
 
