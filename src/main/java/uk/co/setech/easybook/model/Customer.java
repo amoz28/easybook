@@ -1,14 +1,15 @@
 package uk.co.setech.easybook.model;
 
-import jakarta.persistence.*;
-import lombok.*;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.Id;
+import lombok.Getter;
+import lombok.Setter;
 
 @Getter
 @Setter
-@Builder
 @Entity
-@AllArgsConstructor
-@NoArgsConstructor
 public class Customer {
     @Id
     @GeneratedValue

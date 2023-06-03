@@ -1,6 +1,13 @@
 package uk.co.setech.easybook.service.impl;
 
-import com.itextpdf.text.*;
+import com.itextpdf.text.Document;
+import com.itextpdf.text.DocumentException;
+import com.itextpdf.text.Element;
+import com.itextpdf.text.Font;
+import com.itextpdf.text.FontFactory;
+import com.itextpdf.text.Image;
+import com.itextpdf.text.Paragraph;
+import com.itextpdf.text.Phrase;
 import com.itextpdf.text.pdf.PdfPCell;
 import com.itextpdf.text.pdf.PdfPTable;
 import com.itextpdf.text.pdf.PdfWriter;
@@ -47,21 +54,16 @@ public class InvoiceServiceImpl implements InvoiceService {
 
     @Override
     public InvoiceDto createInvoice(InvoiceDto invoiceDto) {
-        Integer customerId = invoiceDto.getCustomerId();
-        var customer = customerService.getCustomerById(customerId);
-        invoiceDto.setCustomerId(customer.getId());
-        var invoice = dtoToInvoice(invoiceDto, Invoice.builder().build());
         var user = getCurrentUserDetails();
-        invoice.setUserId(user.getId());
+        long userId = user.getId();
+        Integer customerId = invoiceDto.getCustomerId();
+        var customer = customerService.getCustomerByIdAndUserId(customerId, userId);
+        var invoice = dtoToInvoice(invoiceDto, new Invoice());
+        invoice.setUserId(userId);
         invoice = invoiceRepo.save(invoice);
-
         try {
-            // Generate the invoice as a PDF
             byte[] invoicePdf = generateInvoicePdf(invoice, user, customer);
-
-            // Send the email with the invoice as an attachment
-            emailService.sendEmailWithAttachment(invoicePdf,customer.getFirstname(), customer.getEmail());
-
+            emailService.sendEmailWithAttachment(invoicePdf, customer.getFirstname(), customer.getEmail());
         } catch (Exception e) {
             log.error("Exception Occurred generating invoice ", e);
         }
@@ -201,7 +203,7 @@ public class InvoiceServiceImpl implements InvoiceService {
     public InvoiceDto updateInvoice(InvoiceDto invoiceDto) {
         long userId = getCurrentUserDetails().getId();
         var invoice = invoiceRepo.findByIdAndUserId(invoiceDto.getId(), userId)
-                .orElseThrow(() -> new IllegalStateException("Invalid invoice number"));
+                .orElseThrow(() -> new CustomException(HttpStatus.NOT_FOUND, "Invoice not found"));
         dtoToInvoice(invoiceDto, invoice);
         var savedInvoice = invoiceRepo.save(invoice);
         return invoiceToDto(savedInvoice);
@@ -214,10 +216,9 @@ public class InvoiceServiceImpl implements InvoiceService {
         return getInvoiceDtos(userId, invoiceType);
     }
 
-    @Override
-    public List<InvoiceDto> getAllInvoiceByCustomer(String email) {
-        var customer = customerService.getCustomerByEmail(email);
-        Integer userId = getCurrentUserDetails().getId();
+    public List<InvoiceDto> getAllInvoiceByCustomerEmail(String email) {
+        long userId = getCurrentUserDetails().getId();
+        var customer = customerService.getCustomerByEmailAndUserId(email, userId);
         return invoiceRepo.findAllInvoiceByUserIdAndCustomerId(userId, customer.getId())
                 .stream()
                 .map(this::invoiceToDto)
@@ -254,7 +255,7 @@ public class InvoiceServiceImpl implements InvoiceService {
         return invoiceRepo.findByIdAndUserId(invoiceId, userId)
                 .map(this::invoiceToDto
                 )
-                .orElseThrow(() -> new CustomException(HttpStatus.NOT_FOUND, "Invoice Id not found"));
+                .orElseThrow(() -> new CustomException(HttpStatus.NOT_FOUND, "Invoice not found"));
     }
 
     @Override
@@ -266,9 +267,8 @@ public class InvoiceServiceImpl implements InvoiceService {
                 .build();
     }
 
-
     private InvoiceDto invoiceToDto(Invoice invoice) {
-        var invoiceDto = InvoiceDto.builder().build();
+        var invoiceDto = new InvoiceDto();
         BeanUtils.copyProperties(invoice, invoiceDto);
         var invoiceItems = invoice.getItems().stream()
                 .map(itemsDto -> ItemsDto.builder()
@@ -306,7 +306,7 @@ public class InvoiceServiceImpl implements InvoiceService {
         invoiceRepo
                 .findByIsInvoicePaidIsFalseAndLastReminderDateBefore(LocalDate.now())
                 .forEach(invoice -> {
-                    CustomerDto customer = customerService.getCustomerById(invoice.getCustomerId());
+                    CustomerDto customer = customerService.getCustomerByIdAndUserId(invoice.getCustomerId(), invoice.getUserId());
                     emailService.send(customer.getFirstname(), customer.getEmail(), message, "INVOICE REMINDER");
                 });
     }
@@ -314,7 +314,7 @@ public class InvoiceServiceImpl implements InvoiceService {
     @Override
     public GeneralResponse addPayment(Long invoiceId) {
         invoiceRepo.findById(invoiceId)
-                .orElseThrow(() -> new IllegalStateException("Invoice not found"));
+                .orElseThrow(() -> new CustomException(HttpStatus.NOT_FOUND, "Invoice not found"));
         return GeneralResponse.builder()
                 .message("Payment was successfully updated")
                 .build();

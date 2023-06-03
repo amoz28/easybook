@@ -8,9 +8,9 @@ import java.util.List;
 public interface CustomerService {
     GeneralResponse createCustomer(CustomerDto customerDto);
 
-    CustomerDto getCustomerByEmail(String email);
+    CustomerDto getCustomerByEmailAndUserId(String email, long userId);
 
-    CustomerDto getCustomerById(Integer id);
+    CustomerDto getCustomerByIdAndUserId(long id, long userId);
 
     List<CustomerDto> getAllCustomers(int pageNo, int pageSize);
 

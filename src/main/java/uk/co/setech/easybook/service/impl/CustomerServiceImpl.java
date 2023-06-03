@@ -3,16 +3,18 @@ package uk.co.setech.easybook.service.impl;
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.BeanUtils;
 import org.springframework.data.domain.PageRequest;
+import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import uk.co.setech.easybook.dto.CustomerDto;
 import uk.co.setech.easybook.dto.GeneralResponse;
+import uk.co.setech.easybook.exception.CustomException;
 import uk.co.setech.easybook.model.Customer;
 import uk.co.setech.easybook.repository.CustomerRepo;
-import uk.co.setech.easybook.repository.UserRepo;
 import uk.co.setech.easybook.service.CustomerService;
 import uk.co.setech.easybook.utils.Utils;
 
 import java.util.List;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 import static uk.co.setech.easybook.utils.Utils.getCurrentUserDetails;
@@ -22,7 +24,7 @@ import static uk.co.setech.easybook.utils.Utils.getCurrentUserDetails;
 public class CustomerServiceImpl implements CustomerService {
 
     private final CustomerRepo customerRepo;
-    private final UserRepo userRepo;
+    private final Supplier<CustomException> CUSTOMER_NOT_FOUND = () -> new CustomException(HttpStatus.NOT_FOUND, "Customer not found");
 
     @Override
     public GeneralResponse createCustomer(CustomerDto customerDto) {
@@ -32,24 +34,22 @@ public class CustomerServiceImpl implements CustomerService {
         customerRepo.save(customer);
 
         return GeneralResponse.builder()
-                .message("User Successfully Created")
+                .message("Customer Successfully Created")
                 .build();
     }
 
     @Override
-    public CustomerDto getCustomerByEmail(String email) {
-        long userId = getCurrentUserDetails().getId();
-
+    public CustomerDto getCustomerByEmailAndUserId(String email, long userId) {
         return customerRepo.findByEmailAndUserId(email, userId)
                 .map(this::customerToDto)
-                .orElseThrow(() -> new IllegalStateException("Customer not found"));
+                .orElseThrow(CUSTOMER_NOT_FOUND);
     }
 
     @Override
-    public CustomerDto getCustomerById(Integer id) {
-        return customerRepo.findById(id)
+    public CustomerDto getCustomerByIdAndUserId(long id, long userId) {
+        return customerRepo.findByIdAndUserId(id, userId)
                 .map(this::customerToDto)
-                .orElseThrow(() -> new IllegalStateException("Customer not found"));
+                .orElseThrow(CUSTOMER_NOT_FOUND);
     }
 
     @Override
@@ -73,7 +73,7 @@ public class CustomerServiceImpl implements CustomerService {
     public CustomerDto updateCustomer(CustomerDto customerDto) {
         long userId = getCurrentUserDetails().getId();
         var customer = customerRepo.findByEmailAndUserId(customerDto.getEmail(), userId)
-                .orElseThrow(() -> new IllegalStateException("Customer not found"));
+                .orElseThrow(CUSTOMER_NOT_FOUND);
 
         dtoToCustomer(customerDto, customer);
         var savedCustomer = customerRepo.save(customer);
@@ -85,7 +85,7 @@ public class CustomerServiceImpl implements CustomerService {
     public GeneralResponse deleteCustomerByEmail(String email) {
         long userId = getCurrentUserDetails().getId();
         var customer = customerRepo.findByEmailAndUserId(email, userId)
-                .orElseThrow(() -> new IllegalStateException("Customer not found"));
+                .orElseThrow(CUSTOMER_NOT_FOUND);
         customerRepo.delete(customer);
 
         return GeneralResponse.builder()

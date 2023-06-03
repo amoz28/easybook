@@ -3,6 +3,7 @@ package uk.co.setech.easybook.service.impl;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.cache.annotation.CachePut;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
@@ -19,6 +20,7 @@ import uk.co.setech.easybook.dto.VerificationRequest;
 import uk.co.setech.easybook.email.EmailService;
 import uk.co.setech.easybook.enums.InvoiceType;
 import uk.co.setech.easybook.enums.Role;
+import uk.co.setech.easybook.exception.CustomException;
 import uk.co.setech.easybook.model.ConfirmOtp;
 import uk.co.setech.easybook.model.User;
 import uk.co.setech.easybook.repository.ConfirmOtpRepo;
@@ -244,12 +246,12 @@ public class AuthenticationService {
 
     public AuthenticationResponse resetPassword(AuthenticationRequest request) {
         User user = userRepo.findByEmail(request.getEmail())
-                .orElseThrow(() -> new UsernameNotFoundException(String.format(USER_NOT_FOUND, request.getEmail())));
+                .orElseThrow(() -> new CustomException(HttpStatus.NOT_FOUND, String.format(USER_NOT_FOUND, request.getEmail())));
 //      @TODO ENSURE USER ARE NOT ABLE TO RESET PASSWORD TWICE WITHOUT CALLING FORGOT PASSWORD TWICE
         var confOtp = confirmOtpRepo.findByUser(user)
-                .orElseThrow(() -> new IllegalStateException("Invalid UserId"));
+                .orElseThrow(() -> new CustomException(HttpStatus.NOT_FOUND, "Invalid UserId"));
         if (LocalDateTime.now().isAfter(confOtp.getConfirmedAt().plusMinutes(5))) {
-            throw new IllegalStateException("Request Timed Out please try again");
+            throw new CustomException(HttpStatus.BAD_REQUEST, "Request Timed Out please try again");
         }
 
         user.setPassword(passwordEncoder.encode(request.getPassword()));
