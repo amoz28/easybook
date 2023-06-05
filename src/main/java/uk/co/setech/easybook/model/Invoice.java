@@ -52,6 +52,3 @@ public class Invoice {
     @Enumerated(EnumType.STRING)
     private InvoiceType type;
 }
-
-
-

@@ -27,6 +27,16 @@ public class ControllerExceptionHandler {
 
         return new ResponseEntity<>(message, HttpStatus.BAD_REQUEST);
     }
+    @ExceptionHandler(IllegalArgumentException.class)
+    public ResponseEntity<ErrorMessage> handleIllegalArgumentException(IllegalArgumentException ex, WebRequest request) {
+        ErrorMessage message = new ErrorMessage(
+                HttpStatus.BAD_REQUEST.value(),
+                new Date(),
+                "Illegal Argument Passed",
+                request.getDescription(false));
+
+        return new ResponseEntity<>(message, HttpStatus.BAD_REQUEST);
+    }
     @ExceptionHandler(CustomException.class)
     public ResponseEntity<ErrorMessage> handleCustomException(CustomException ex, WebRequest request) {
         ErrorMessage message = new ErrorMessage(
