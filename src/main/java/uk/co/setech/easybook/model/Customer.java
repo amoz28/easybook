@@ -21,6 +21,7 @@ public class Customer {
     private String phonenumber;
     private String address;
     private String companyname;
+    private String taxNumber;
     private String postcode;
     private String country;
     @Column(nullable = false)

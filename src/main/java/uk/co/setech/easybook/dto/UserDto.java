@@ -23,6 +23,10 @@ public class UserDto {
     private String county;
     private String country;
     private String postCode;
+    private String companyRegistrationNo;
+    private String accountNo;
+    private String sortCode;
+    private String accountName;
     private Role role;
     private Boolean locked;
 

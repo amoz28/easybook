@@ -37,6 +37,10 @@ public class User implements UserDetails {
     private String county;
     private String country;
     private String postCode;
+    private String companyRegistrationNo;
+    private String accountNo;
+    private String sortCode;
+    private String accountName;
     private String password;
     @Enumerated(EnumType.STRING)
     private Role role;
