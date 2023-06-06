@@ -101,7 +101,12 @@ public class InvoiceServiceImpl implements InvoiceService {
     public List<InvoiceDto> getAllInvoiceByCustomerId(Long customerId, String type) {
         long userId = getCurrentUserDetails().getId();
         InvoiceType invoiceType = type == null ? null : InvoiceType.valueOf(type);
-        return invoiceRepo.findAllInvoiceByUserIdAndCustomerIdAndType(userId, customerId, invoiceType)
+
+        List<Invoice> allUserInvoices = invoiceType == null
+                ? invoiceRepo.findAllInvoiceByUserIdAndCustomerId(userId, customerId)
+                : invoiceRepo.findAllInvoiceByUserIdAndCustomerIdAndType(userId, customerId, invoiceType);
+
+        return allUserInvoices
                 .stream()
                 .map(this::invoiceToDto)
                 .collect(Collectors.toList());

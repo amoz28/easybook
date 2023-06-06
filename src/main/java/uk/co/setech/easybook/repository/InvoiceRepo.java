@@ -29,4 +29,5 @@ public interface InvoiceRepo extends JpaRepository<Invoice, Long> {
     Page<Invoice> findAllInvoiceByUserIdAndType(long userId, Pageable pageable, InvoiceType type);
 
     List<Invoice> findAllInvoiceByUserIdAndCustomerIdAndType(long userId, long customerId, InvoiceType type );
+    List<Invoice> findAllInvoiceByUserIdAndCustomerId(long userId, long customerId);
 }
