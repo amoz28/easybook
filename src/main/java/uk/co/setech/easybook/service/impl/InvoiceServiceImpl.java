@@ -98,7 +98,7 @@ public class InvoiceServiceImpl implements InvoiceService {
         return getInvoiceDtos(userId, invoiceType);
     }
 
-    public List<InvoiceDto> getAllInvoiceByCustomerId(Long customerId, String type) {
+    public List<InvoiceDto> getAllInvoiceByCustomerIdAndType(Long customerId, String type) {
         long userId = getCurrentUserDetails().getId();
         InvoiceType invoiceType = type == null ? null : InvoiceType.valueOf(type);
 
@@ -200,10 +200,36 @@ public class InvoiceServiceImpl implements InvoiceService {
 
     @Override
     public GeneralResponse addPayment(Long invoiceId) {
-        invoiceRepo.findById(invoiceId)
-                .orElseThrow(() -> new CustomException(HttpStatus.NOT_FOUND, "Invoice not found"));
+        invoiceRepo.markInvoiceAsPaid(invoiceId);
         return GeneralResponse.builder()
                 .message("Payment was successfully updated")
                 .build();
     }
+
+    @Override
+    public GeneralResponse resendInvoice(Long invoiceId){
+        var invoice = invoiceRepo.findById(invoiceId)
+                .orElseThrow(() -> new CustomException(HttpStatus.NOT_FOUND, "Invoice not found"));
+
+        var customerId = invoice.getCustomerId();
+
+        var user = getCurrentUserDetails();
+
+        long userId = user.getId();
+
+        var customer = customerService.getCustomerByIdAndUserId(customerId, userId);
+
+        String htmlContent = generateInvoiceHtml(invoice, user, customer);
+
+        try {
+            byte[] pdfBytes = generatePdfFromHtml(htmlContent);
+            emailService.sendEmailWithAttachment(pdfBytes, customer.getFirstname(), customer.getEmail());
+        } catch (Exception e) {
+            log.error("Exception Occurred generating invoice ", e);
+        }
+
+        return GeneralResponse.builder()
+                .message("Invoice has been resent")
+                .build();
+    };
 }

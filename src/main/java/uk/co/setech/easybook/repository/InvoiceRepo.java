@@ -3,6 +3,8 @@ package uk.co.setech.easybook.repository;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
+import org.springframework.data.jpa.repository.Query;
 import org.springframework.transaction.annotation.Transactional;
 import uk.co.setech.easybook.enums.InvoiceType;
 import uk.co.setech.easybook.model.Invoice;
@@ -30,4 +32,9 @@ public interface InvoiceRepo extends JpaRepository<Invoice, Long> {
 
     List<Invoice> findAllInvoiceByUserIdAndCustomerIdAndType(long userId, long customerId, InvoiceType type );
     List<Invoice> findAllInvoiceByUserIdAndCustomerId(long userId, long customerId);
+
+    @Modifying
+    @Transactional
+    @Query("UPDATE Invoice SET isInvoicePaid = true WHERE id = :invoiceId")
+    void markInvoiceAsPaid(Long invoiceId);
 }

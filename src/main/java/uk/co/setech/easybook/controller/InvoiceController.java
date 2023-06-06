@@ -48,12 +48,17 @@ public class InvoiceController {
     @GetMapping("/byCustomerId")
     public ResponseEntity<List<InvoiceDto>> getInvoiceByCustomer(
             @RequestParam(value = "type", required = false) String type,@RequestParam Long customerId) {
-        return ResponseEntity.ok(invoiceService.getAllInvoiceByCustomerId(customerId, type));
+        return ResponseEntity.ok(invoiceService.getAllInvoiceByCustomerIdAndType(customerId, type));
     }
 
     @PutMapping("/addPayment")
-    public ResponseEntity<GeneralResponse> addPayment(@RequestBody Long invoiceId) {
+    public ResponseEntity<GeneralResponse> addPayment( @RequestParam(value = "invoiceId") Long invoiceId) {
         return ResponseEntity.ok(invoiceService.addPayment(invoiceId));
+    }
+
+    @GetMapping("/resendInvoice")
+    public ResponseEntity<GeneralResponse> resendInvoice( @RequestParam(value = "invoiceId") Long invoiceId) {
+        return ResponseEntity.ok(invoiceService.resendInvoice(invoiceId));
     }
 
     @DeleteMapping("/{id}")

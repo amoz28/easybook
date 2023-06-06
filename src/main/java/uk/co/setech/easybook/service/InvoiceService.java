@@ -13,7 +13,7 @@ public interface InvoiceService {
 
     List<InvoiceDto> getAllInvoice(String type);
 
-    List<InvoiceDto> getAllInvoiceByCustomerId(Long customerId, String type);
+    List<InvoiceDto> getAllInvoiceByCustomerIdAndType(Long customerId, String type);
 
     List<InvoiceDto> getAllInvoicesWithSize(int pageNo, int pageSize, String type);
 
@@ -26,4 +26,6 @@ public interface InvoiceService {
     void sendInvoiceReminder();
 
     GeneralResponse addPayment(Long invoiceId);
+
+    GeneralResponse resendInvoice(Long invoiceId);
 }
