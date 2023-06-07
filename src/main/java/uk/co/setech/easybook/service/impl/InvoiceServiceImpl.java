@@ -68,7 +68,7 @@ public class InvoiceServiceImpl implements InvoiceService {
         context.setVariable("invoice", invoice);
         context.setVariable("user", user);
         context.setVariable("customer", customerDto);
-        return templateEngine.process("invoice-template", context);
+        return templateEngine.process("Invoice-template", context);
     }
 
     private byte[] generatePdfFromHtml(String htmlContent) throws Exception {
@@ -219,14 +219,14 @@ public class InvoiceServiceImpl implements InvoiceService {
 
         var customer = customerService.getCustomerByIdAndUserId(customerId, userId);
 
-//        String htmlContent = generateInvoiceHtml(invoice, user, customer);
-//
-//        try {
-//            byte[] pdfBytes = generatePdfFromHtml(htmlContent);
-//            emailService.sendEmailWithAttachment(pdfBytes, customer.getFirstname(), customer.getEmail());
-//        } catch (Exception e) {
-//            log.error("Exception Occurred generating invoice ", e);
-//        }
+        String htmlContent = generateInvoiceHtml(invoice, user, customer);
+
+        try {
+            byte[] pdfBytes = generatePdfFromHtml(htmlContent);
+            emailService.sendEmailWithAttachment(pdfBytes, customer.getFirstname(), customer.getEmail());
+        } catch (Exception e) {
+            log.error("Exception Occurred generating invoice ", e);
+        }
 
         return GeneralResponse.builder()
                 .message("Invoice has been resent")
