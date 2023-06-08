@@ -1,6 +1,7 @@
 package uk.co.setech.easybook.exception;
 
 import jakarta.servlet.ServletException;
+import org.postgresql.util.PSQLException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.BadCredentialsException;
@@ -27,6 +28,19 @@ public class ControllerExceptionHandler {
 
         return new ResponseEntity<>(message, HttpStatus.BAD_REQUEST);
     }
+
+    @ExceptionHandler(PSQLException.class)
+    public ResponseEntity<ErrorMessage> handlePSQLException(PSQLException ex, WebRequest request) {
+        System.out.println("Exception Log "+ex.getMessage().contains("violates unique constraint"));
+        ErrorMessage message = new ErrorMessage(
+                HttpStatus.BAD_REQUEST.value(),
+                new Date(),
+                ex.getMessage().contains("violates unique constraint")?"Username or email already exists":ex.getMessage(),
+                request.getDescription(false));
+
+        return new ResponseEntity<>(message, HttpStatus.BAD_REQUEST);
+    }
+
     @ExceptionHandler(IllegalArgumentException.class)
     public ResponseEntity<ErrorMessage> handleIllegalArgumentException(IllegalArgumentException ex, WebRequest request) {
         ErrorMessage message = new ErrorMessage(
