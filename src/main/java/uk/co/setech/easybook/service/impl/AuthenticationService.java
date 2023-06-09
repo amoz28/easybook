@@ -37,6 +37,8 @@ import java.util.Random;
 public class AuthenticationService {
 
     private static final String USER_NOT_FOUND = "User with email: %s Not Found";
+    private static final String USER_ALREADY_EXIST = "User with email: %s Already Exists";
+    private static final String CONTINUE_REGISTRSTION = "User with email: %s has an incomplete Registration";
     private final UserRepo userRepo;
     private final PasswordEncoder passwordEncoder;
     private final AuthenticationManager authenticationManager;
@@ -49,6 +51,14 @@ public class AuthenticationService {
     private final ConfirmOtpRepo confirmOtpRepo;
 
     public GeneralResponse register(RegisterRequest request) {
+        request.setEmail(request.getEmail().toLowerCase());
+        var userObj = userRepo.findByEmail(request.getEmail());
+        if (userObj.isPresent() && userObj.get().isEnabled()) {
+            throw new CustomException(HttpStatus.FORBIDDEN, String.format(USER_ALREADY_EXIST, request.getEmail()));
+        } else if (userObj.isPresent() && !userObj.get().isEnabled()) {
+            throw new CustomException(HttpStatus.CONFLICT, String.format(CONTINUE_REGISTRSTION, request.getEmail()));
+        }
+
         var user = User.builder()
                 .firstName(request.getFirstname())
                 .lastName(request.getLastname())
@@ -63,10 +73,10 @@ public class AuthenticationService {
         String subject = "Account Verification OTP";
         String message = "Please enter the OTP to complete you email verification process " + otp;
         emailService.send(user.getFirstName(), user.getEmail(), message, subject);
-//       @TODO sendMail(email, message, subject );
 
         return GeneralResponse
                 .builder()
+                .status(HttpStatus.CREATED.value())
                 .message("Account successfully created, an OTP has been sent to your account for verification")
                 .build();
     }
@@ -154,6 +164,7 @@ public class AuthenticationService {
         userRepo.save(user);
 
         return GeneralResponse.builder()
+                .status(HttpStatus.CONTINUE.value())
                 .message(confirmationMsg)
                 .build();
     }
@@ -167,6 +178,7 @@ public class AuthenticationService {
         String message = "Here is the OTP you requested for to complete the process " + otp;
         emailService.send(user.getFirstName(), email, message, subject);
         return GeneralResponse.builder()
+                .status(HttpStatus.OK.value())
                 .message("OTP has been resent check your email")
                 .build();
     }
@@ -202,6 +214,7 @@ public class AuthenticationService {
 
         //       @TODO sendMail(email, message, subject );
         return GeneralResponse.builder()
+                .status(HttpStatus.OK.value())
                 .message("An otp has been sent to your email for verification")
                 .build();
     }

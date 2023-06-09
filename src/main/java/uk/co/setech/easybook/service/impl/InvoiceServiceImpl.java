@@ -150,6 +150,7 @@ public class InvoiceServiceImpl implements InvoiceService {
         long userId = getCurrentUserDetails().getId();
         invoiceRepo.deleteByIdAndUserId(invoiceId, userId);
         return GeneralResponse.builder()
+                .status(HttpStatus.OK.value())
                 .message("Invoice deleted")
                 .build();
     }
@@ -202,6 +203,7 @@ public class InvoiceServiceImpl implements InvoiceService {
     public GeneralResponse addPayment(Long invoiceId) {
         invoiceRepo.markInvoiceAsPaid(invoiceId);
         return GeneralResponse.builder()
+                .status(HttpStatus.OK.value())
                 .message("Payment was successfully updated")
                 .build();
     }

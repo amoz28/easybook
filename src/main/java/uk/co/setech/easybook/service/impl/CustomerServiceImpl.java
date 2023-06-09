@@ -34,6 +34,7 @@ public class CustomerServiceImpl implements CustomerService {
         customerRepo.save(customer);
 
         return GeneralResponse.builder()
+                .status(HttpStatus.OK.value())
                 .message("Customer Successfully Created")
                 .build();
     }
@@ -89,6 +90,7 @@ public class CustomerServiceImpl implements CustomerService {
         customerRepo.delete(customer);
 
         return GeneralResponse.builder()
+                .status(HttpStatus.OK.value())
                 .message("Customer deleted")
                 .build();
     }
