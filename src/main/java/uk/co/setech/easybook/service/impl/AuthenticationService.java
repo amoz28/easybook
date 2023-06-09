@@ -165,7 +165,7 @@ public class AuthenticationService {
         userRepo.save(user);
 
         return GeneralResponse.builder()
-                .status(HttpStatus.CONTINUE.value())
+                .status(HttpStatus.OK.value())
                 .message(confirmationMsg)
                 .build();
     }
