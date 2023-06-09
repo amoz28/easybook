@@ -103,7 +103,7 @@ public class AuthenticationService {
                         request.getPassword())
         );
 
-        var user = userRepo.findByEmail(request.getEmail())
+        var user = userRepo.findByEmail(request.getEmail().toLowerCase())
                 .orElseThrow(() ->
                         new UsernameNotFoundException(String.format(USER_NOT_FOUND, request.getEmail())));
 
@@ -152,11 +152,12 @@ public class AuthenticationService {
                 .extraData(shortCutList)
 //                .recentInvoice(recentInvoice)
                 .token(jwtToken)
+                .status(HttpStatus.OK.value())
                 .build();
     }
 
     public GeneralResponse verifyOtp(VerificationRequest request) {
-        var user = userRepo.findByEmail(request.email())
+        var user = userRepo.findByEmail(request.email().toLowerCase())
                 .orElseThrow(() -> new UsernameNotFoundException(String.format(USER_NOT_FOUND, request.email())));
 
         String confirmationMsg = confirmOtpService.verifyOtpByUserId(request.otp(), user);
@@ -170,7 +171,7 @@ public class AuthenticationService {
     }
 
     public GeneralResponse resendOtp(String email) {
-        User user = userRepo.findByEmail(email)
+        User user = userRepo.findByEmail(email.toLowerCase())
                 .orElseThrow(() -> new UsernameNotFoundException(String.format(USER_NOT_FOUND, email)));
 
         var otp = confirmOtpService.getOtp(user);
