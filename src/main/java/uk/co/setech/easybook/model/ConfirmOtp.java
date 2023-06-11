@@ -2,8 +2,6 @@ package uk.co.setech.easybook.model;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.ManyToOne;
 import lombok.AllArgsConstructor;
@@ -20,11 +18,7 @@ import java.time.LocalDateTime;
 @Builder
 @AllArgsConstructor
 @NoArgsConstructor
-public class ConfirmOtp {
-    @Id
-    @GeneratedValue
-    private Long id;
-
+public class ConfirmOtp extends BaseEntity {
     @Column(nullable = false)
     private String otp;
 

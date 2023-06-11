@@ -2,18 +2,13 @@ package uk.co.setech.easybook.model;
 
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
-import jakarta.persistence.GeneratedValue;
-import jakarta.persistence.Id;
 import lombok.Getter;
 import lombok.Setter;
 
 @Getter
 @Setter
 @Entity
-public class Customer {
-    @Id
-    @GeneratedValue
-    private Integer id;
+public class Customer extends BaseEntity {
     private String displayname;
     private String firstname;
     private String lastname;

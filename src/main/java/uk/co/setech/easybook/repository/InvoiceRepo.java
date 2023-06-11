@@ -15,18 +15,18 @@ public interface InvoiceRepo extends JpaRepository<Invoice, Long> {
 
     Optional<Invoice> findByIdAndUserId(Long id, long userId);
 
-    List<Invoice> findByUserIdAndType(long userId, InvoiceType type);
+    List<Invoice> findByUserIdAndTypeOrderByIdDesc(long userId, InvoiceType type);
 
-    List<Invoice> findByUserId(long userId);
+    List<Invoice> findByUserIdOrderByIdDesc(long userId);
 
     @Transactional
     void deleteByIdAndUserId(Long id, long userId);
 
     List<Invoice> findByIsInvoicePaidIsFalseAndLastReminderDateBefore(LocalDate date);
 
-    Page<Invoice> findAllInvoiceByUserId(long userId, Pageable pageable);
+    Page<Invoice> findAllInvoiceByUserIdOrderByIdDesc(long userId, Pageable pageable);
 
-    Page<Invoice> findAllInvoiceByUserIdAndType(long userId, Pageable pageable, InvoiceType type);
+    Page<Invoice> findAllInvoiceByUserIdAndTypeOrderByIdDesc(long userId, Pageable pageable, InvoiceType type);
 
-    List<Invoice> findAllInvoiceByUserIdAndCustomerId(long userId, long customerId);
+    List<Invoice> findAllInvoiceByUserIdAndCustomerIdOrderByIdDesc(long userId, long customerId);
 }

@@ -101,7 +101,7 @@ public class InvoiceServiceImpl implements InvoiceService {
     public List<InvoiceDto> getAllInvoiceByCustomerEmail(String email) {
         long userId = getCurrentUserDetails().getId();
         var customer = customerService.getCustomerByEmailAndUserId(email, userId);
-        return invoiceRepo.findAllInvoiceByUserIdAndCustomerId(userId, customer.getId())
+        return invoiceRepo.findAllInvoiceByUserIdAndCustomerIdOrderByIdDesc(userId, customer.getId())
                 .stream()
                 .map(this::invoiceToDto)
                 .collect(Collectors.toList());
@@ -110,11 +110,10 @@ public class InvoiceServiceImpl implements InvoiceService {
     @Override
     public List<InvoiceDto> getAllInvoicesWithSize(int pageNo, int pageSize, String type) {
         long userId = getCurrentUserDetails().getId();
-        Sort descendingSort = Sort.by(Sort.Direction.DESC, "id");
-        PageRequest pageable = PageRequest.of(pageNo, pageSize, descendingSort);
+        PageRequest pageable = PageRequest.of(pageNo, pageSize);
         Page<Invoice> invoices = type == null
-                ? invoiceRepo.findAllInvoiceByUserId(userId, pageable)
-                : invoiceRepo.findAllInvoiceByUserIdAndType(userId, pageable, InvoiceType.valueOf(type));
+                ? invoiceRepo.findAllInvoiceByUserIdOrderByIdDesc(userId, pageable)
+                : invoiceRepo.findAllInvoiceByUserIdAndTypeOrderByIdDesc(userId, pageable, InvoiceType.valueOf(type));
         return invoices
                 .map(this::invoiceToDto)
                 .getContent();
@@ -123,8 +122,8 @@ public class InvoiceServiceImpl implements InvoiceService {
     @Override
     public List<InvoiceDto> getInvoiceDtos(long userId, InvoiceType invoiceType) {
         List<Invoice> allUserInvoices = invoiceType == null
-                ? invoiceRepo.findByUserId(userId)
-                : invoiceRepo.findByUserIdAndType(userId, invoiceType);
+                ? invoiceRepo.findByUserIdOrderByIdDesc(userId)
+                : invoiceRepo.findByUserIdAndTypeOrderByIdDesc(userId, invoiceType);
         return allUserInvoices
                 .stream()
                 .map(this::invoiceToDto)

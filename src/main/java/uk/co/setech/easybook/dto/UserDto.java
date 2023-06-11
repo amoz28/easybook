@@ -10,7 +10,7 @@ import uk.co.setech.easybook.enums.Role;
 @Setter
 @Builder
 public class UserDto {
-    private Integer id;
+    private Long id;
     private String firstName;
     private String lastName;
     private String email;

@@ -1,9 +1,14 @@
 package uk.co.setech.easybook.model;
 
-import jakarta.persistence.*;
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.Table;
 import lombok.AllArgsConstructor;
 import lombok.Builder;
 import lombok.Data;
+import lombok.EqualsAndHashCode;
 import lombok.NoArgsConstructor;
 import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.authority.SimpleGrantedAuthority;
@@ -13,19 +18,16 @@ import uk.co.setech.easybook.enums.Role;
 import java.util.Collection;
 import java.util.List;
 
+@EqualsAndHashCode(callSuper = true)
 @Data
 @NoArgsConstructor
 @AllArgsConstructor
 @Builder
 @Entity
 @Table(name = "_user")
-public class User implements UserDetails {
-    @Id
-    @GeneratedValue
-    private Integer id;
+public class User extends BaseEntity implements UserDetails {
     private String firstName;
     private String lastName;
-    @Column(unique = true)
     private String email;
     private String phoneNumber;
     private String companyName;
