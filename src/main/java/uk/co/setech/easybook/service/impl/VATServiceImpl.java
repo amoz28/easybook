@@ -11,12 +11,14 @@ import uk.co.setech.easybook.repository.VATRepository;
 import uk.co.setech.easybook.service.VATService;
 
 import java.util.List;
+import java.util.function.Supplier;
 import java.util.stream.Collectors;
 
 @Service
 @RequiredArgsConstructor
 public class VATServiceImpl implements VATService {
     private final VATRepository vatRepository;
+    private final Supplier<CustomException> VAT_DOES_NOT_EXIST = () -> new CustomException(HttpStatus.NOT_FOUND, "VAT Does Not Exist");
 
     @Override
     public VATDto createVAT(VATDto vatDto) {
@@ -27,8 +29,7 @@ public class VATServiceImpl implements VATService {
 
     @Override
     public VATDto updateVAT(VATDto vatDto) {
-        var vat = vatRepository.findById(vatDto.getId())
-                .orElseThrow(() -> new CustomException(HttpStatus.NOT_FOUND, "VAT Does Not Exist"));
+        var vat = vatRepository.findById(vatDto.getId()).orElseThrow(VAT_DOES_NOT_EXIST);
         toVAT(vatDto, vat);
         vatRepository.save(vat);
         return toVATDto(vat);
@@ -36,8 +37,7 @@ public class VATServiceImpl implements VATService {
 
     @Override
     public VATDto getVAT(Long id) {
-        var vat = vatRepository.findById(id)
-                .orElseThrow(() -> new CustomException(HttpStatus.NOT_FOUND, "VAT Does Not Exist"));
+        var vat = vatRepository.findById(id).orElseThrow(VAT_DOES_NOT_EXIST);
         return toVATDto(vat);
     }
 
@@ -51,8 +51,7 @@ public class VATServiceImpl implements VATService {
 
     @Override
     public void deleteVAT(Long id) {
-        var vat = vatRepository.findById(id)
-                .orElseThrow(() -> new CustomException(HttpStatus.NOT_FOUND, "VAT Does Not Exist"));
+        var vat = vatRepository.findById(id).orElseThrow(VAT_DOES_NOT_EXIST);
         vatRepository.delete(vat);
     }
 
