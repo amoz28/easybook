@@ -208,7 +208,6 @@ public class AuthenticationService {
                 );
         confirmOtpRepo.save(confOtp);
 
-        System.out.println("OTP == " + otp);
         String subject = "Reset Password - OTP Verification";
         String message = "You are about to reset your password, use this OTP to complete the reset process " + otp;
         emailService.send(user.getFirstName(), user.getEmail(), message, subject);

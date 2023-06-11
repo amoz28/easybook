@@ -212,24 +212,17 @@ public class InvoiceServiceImpl implements InvoiceService {
     public GeneralResponse resendInvoice(Long invoiceId){
         var invoice = invoiceRepo.findById(invoiceId)
                 .orElseThrow(() -> new CustomException(HttpStatus.NOT_FOUND, "Invoice not found"));
-
         var customerId = invoice.getCustomerId();
-
         var user = getCurrentUserDetails();
-
         long userId = user.getId();
-
         var customer = customerService.getCustomerByIdAndUserId(customerId, userId);
-
         String htmlContent = generateInvoiceHtml(invoice, user, customer);
-
         try {
             byte[] pdfBytes = generatePdfFromHtml(htmlContent);
             emailService.sendEmailWithAttachment(pdfBytes, customer.getFirstname(), customer.getEmail());
         } catch (Exception e) {
             log.error("Exception Occurred generating invoice ", e);
         }
-
         return GeneralResponse.builder()
                 .message("Invoice has been resent")
                 .build();
