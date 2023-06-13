@@ -33,7 +33,7 @@ public class ControllerExceptionHandler {
     @ExceptionHandler(LockedException.class)
     public ResponseEntity<ErrorMessage> handleLockedException(LockedException ex, WebRequest request) {
         ErrorMessage message = new ErrorMessage(
-                HttpStatus.BAD_REQUEST.value(),
+                HttpStatus.LOCKED.value(),
                 new Date(),
                 ex.getMessage(),
                 request.getDescription(false));
