@@ -112,7 +112,7 @@ public class AuthenticationService {
                 .mapToDouble(InvoiceDto::getTotal)
                 .sum();
 
-        var recentInvoice = invoiceService.getAllInvoicesWithSize(0,10, "INVOICE");
+        var recentInvoice = invoiceService.getAllInvoicesWithSize(0,10, "INVOICE", "ESTIMATE");
 
         var jwtToken = jwtService.generateToken(user);
         var shortCutList = new ArrayList<InvoiceSummary>();

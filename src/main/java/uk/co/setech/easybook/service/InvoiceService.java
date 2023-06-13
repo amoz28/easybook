@@ -15,7 +15,7 @@ public interface InvoiceService {
 
     List<InvoiceDto> getAllInvoiceByCustomerEmail(String email);
 
-    List<InvoiceDto> getAllInvoicesWithSize(int pageNo, int pageSize, String type);
+    List<InvoiceDto> getAllInvoicesWithSize(int pageNo, int pageSize, String... type);
 
     List<InvoiceDto> getInvoiceDtos(long userId, InvoiceType invoiceType);
 

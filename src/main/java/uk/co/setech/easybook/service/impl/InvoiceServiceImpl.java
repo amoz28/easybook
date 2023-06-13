@@ -30,6 +30,7 @@ import java.io.ByteArrayOutputStream;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static uk.co.setech.easybook.utils.Utils.getCurrentUserDetails;
 
@@ -108,12 +109,12 @@ public class InvoiceServiceImpl implements InvoiceService {
     }
 
     @Override
-    public List<InvoiceDto> getAllInvoicesWithSize(int pageNo, int pageSize, String type) {
+    public List<InvoiceDto> getAllInvoicesWithSize(int pageNo, int pageSize, String... type) {
         long userId = getCurrentUserDetails().getId();
         PageRequest pageable = PageRequest.of(pageNo, pageSize);
         Page<Invoice> invoices = type == null
                 ? invoiceRepo.findAllInvoiceByUserIdOrderByIdDesc(userId, pageable)
-                : invoiceRepo.findAllInvoiceByUserIdAndTypeOrderByIdDesc(userId, pageable, InvoiceType.valueOf(type));
+                : invoiceRepo.findAllInvoiceByUserIdAndTypeInOrderByIdDesc(userId, pageable, Stream.of(type).map(InvoiceType::valueOf).toArray(InvoiceType[]::new));
         return invoices
                 .map(this::invoiceToDto)
                 .getContent();

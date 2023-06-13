@@ -37,7 +37,7 @@ public class SecurityConfiguration implements WebSecurityCustomizer {
                 .csrf()
                 .disable()
                 .authorizeHttpRequests()
-                .requestMatchers("/api/v1/auth/**", "/v1", "/api/balance/**", "/api/v1/vat/**")
+                .requestMatchers("/api/v1/auth/**", "/v1", "/api/balance/**")
                 .permitAll()
                 .anyRequest()
                 .authenticated()
