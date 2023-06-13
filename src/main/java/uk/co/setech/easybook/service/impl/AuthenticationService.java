@@ -6,6 +6,8 @@ import org.springframework.cache.annotation.CachePut;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -97,13 +99,13 @@ public class AuthenticationService {
     }
 
     public AuthenticationResponse authentication(AuthenticationRequest request) {
-        authenticationManager.authenticate(
+        Authentication authenticate = authenticationManager.authenticate(
                 new UsernamePasswordAuthenticationToken(
                         request.getEmail(),
                         request.getPassword())
         );
-
-        var user = userRepo.findByEmail(request.getEmail().toLowerCase())
+        SecurityContextHolder.getContext().setAuthentication(authenticate);
+        var user = userRepo.findByEmail(request.getEmail())
                 .orElseThrow(() ->
                         new UsernameNotFoundException(String.format(USER_NOT_FOUND, request.getEmail())));
 
@@ -120,7 +122,7 @@ public class AuthenticationService {
                 .mapToDouble(InvoiceDto::getTotal)
                 .sum();
 
-//        var recentInvoice = invoiceService.getAllInvoicesWithSize(0,5); TODO
+        var recentInvoice = invoiceService.getAllInvoicesWithSize(0,10, "INVOICE", "ESTIMATE");
 
         var jwtToken = jwtService.generateToken(user);
         var shortCutList = new ArrayList<InvoiceSummary>();
@@ -150,7 +152,7 @@ public class AuthenticationService {
                 .companyLogo(user.getCompanyLogo())
                 .companyName(user.getCompanyName())
                 .extraData(shortCutList)
-//                .recentInvoice(recentInvoice)
+                .recentInvoice(recentInvoice)
                 .token(jwtToken)
                 .status(HttpStatus.OK.value())
                 .build();

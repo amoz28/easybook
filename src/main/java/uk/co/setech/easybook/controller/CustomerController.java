@@ -57,7 +57,7 @@ public class CustomerController {
     public ResponseEntity<CustomerDto> getCustomerDetails(
             @RequestParam String email
     ) {
-        Integer userId = getCurrentUserDetails().getId();
+        Long userId = getCurrentUserDetails().getId();
         return ResponseEntity.ok(customerService.getCustomerByEmailAndUserId(email, userId));
     }
 
@@ -65,7 +65,7 @@ public class CustomerController {
     public ResponseEntity<CustomerDto> getCustomerDetails(
             @PathVariable Long id
     ) {
-        Integer userId = getCurrentUserDetails().getId();
+        Long userId = getCurrentUserDetails().getId();
         return ResponseEntity.ok(customerService.getCustomerByIdAndUserId(id, userId));
     }
 

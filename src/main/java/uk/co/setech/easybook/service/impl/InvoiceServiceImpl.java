@@ -5,7 +5,6 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Sort;
 import org.springframework.http.HttpStatus;
 import org.springframework.stereotype.Service;
 import org.thymeleaf.TemplateEngine;
@@ -30,6 +29,7 @@ import java.io.ByteArrayOutputStream;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.stream.Collectors;
+import java.util.stream.Stream;
 
 import static uk.co.setech.easybook.utils.Utils.getCurrentUserDetails;
 
@@ -113,13 +113,12 @@ public class InvoiceServiceImpl implements InvoiceService {
     }
 
     @Override
-    public List<InvoiceDto> getAllInvoicesWithSize(int pageNo, int pageSize, String type) {
+    public List<InvoiceDto> getAllInvoicesWithSize(int pageNo, int pageSize, String... type) {
         long userId = getCurrentUserDetails().getId();
-        Sort descendingSort = Sort.by(Sort.Direction.DESC, "id");
-        PageRequest pageable = PageRequest.of(pageNo, pageSize, descendingSort);
+        PageRequest pageable = PageRequest.of(pageNo, pageSize);
         Page<Invoice> invoices = type == null
-                ? invoiceRepo.findAllInvoiceByUserId(userId, pageable)
-                : invoiceRepo.findAllInvoiceByUserIdAndType(userId, pageable, InvoiceType.valueOf(type));
+                ? invoiceRepo.findAllInvoiceByUserIdOrderByIdDesc(userId, pageable)
+                : invoiceRepo.findAllInvoiceByUserIdAndTypeInOrderByIdDesc(userId, pageable, Stream.of(type).map(InvoiceType::valueOf).toArray(InvoiceType[]::new));
         return invoices
                 .map(this::invoiceToDto)
                 .getContent();
@@ -128,8 +127,8 @@ public class InvoiceServiceImpl implements InvoiceService {
     @Override
     public List<InvoiceDto> getInvoiceDtos(long userId, InvoiceType invoiceType) {
         List<Invoice> allUserInvoices = invoiceType == null
-                ? invoiceRepo.findByUserId(userId)
-                : invoiceRepo.findByUserIdAndType(userId, invoiceType);
+                ? invoiceRepo.findByUserIdOrderByIdDesc(userId)
+                : invoiceRepo.findByUserIdAndTypeOrderByIdDesc(userId, invoiceType);
         return allUserInvoices
                 .stream()
                 .map(this::invoiceToDto)
