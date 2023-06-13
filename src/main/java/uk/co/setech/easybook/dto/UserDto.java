@@ -1,6 +1,5 @@
 package uk.co.setech.easybook.dto;
 
-import jakarta.persistence.Lob;
 import lombok.Builder;
 import lombok.Getter;
 import lombok.Setter;
@@ -29,7 +28,6 @@ public class UserDto {
     private String accountName;
     private Role role;
     private Boolean locked;
-
     private Boolean enabled;
 
 }

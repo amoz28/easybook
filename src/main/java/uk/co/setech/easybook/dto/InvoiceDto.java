@@ -24,4 +24,5 @@ public class InvoiceDto {
     private boolean isInvoicePaid;
     private Integer customerId;
     private InvoiceType type;
+    private Long outstandingBalance;
 }

@@ -41,9 +41,9 @@ public class User extends BaseEntity implements UserDetails {
     private String country;
     private String postCode;
     private String companyRegistrationNo;
+    private String accountName;
     private String accountNo;
     private String sortCode;
-    private String accountName;
     private String password;
     @Enumerated(EnumType.STRING)
     private Role role;
