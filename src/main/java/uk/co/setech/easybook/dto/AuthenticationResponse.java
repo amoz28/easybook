@@ -23,4 +23,5 @@ public class AuthenticationResponse {
     private ArrayList<InvoiceSummary> extraData;
     private List<InvoiceDto>recentInvoice;
     private String token;
+    private int status;
 }

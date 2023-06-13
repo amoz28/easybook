@@ -41,18 +41,24 @@ public class InvoiceController {
     }
 
     @GetMapping("/{id}")
-    public ResponseEntity<InvoiceDto> getInvoice(@PathVariable Long id) {
+    public ResponseEntity<InvoiceDto> getInvoiceById(@PathVariable Long id) {
         return ResponseEntity.ok(invoiceService.getInvoiceById(id));
     }
 
-    @GetMapping("/byEmail")
-    public ResponseEntity<List<InvoiceDto>> getInvoiceByCustomer(@RequestParam String email) {
-        return ResponseEntity.ok(invoiceService.getAllInvoiceByCustomerEmail(email));
+    @GetMapping("/byCustomerId/{customerId}")
+    public ResponseEntity<List<InvoiceDto>> getInvoiceByCustomerId(
+            @RequestParam(value = "type", required = false) String type,@PathVariable Long customerId) {
+        return ResponseEntity.ok(invoiceService.getAllInvoiceByCustomerIdAndType(customerId, type));
     }
 
-    @PutMapping("/addPayment")
-    public ResponseEntity<GeneralResponse> addPayment(@RequestBody Long invoiceId) {
+    @PutMapping("/addPayment/{invoiceId}")
+    public ResponseEntity<GeneralResponse> addPayment( @PathVariable Long invoiceId) {
         return ResponseEntity.ok(invoiceService.addPayment(invoiceId));
+    }
+
+    @GetMapping("/resendInvoice")
+    public ResponseEntity<GeneralResponse> resendInvoice( @RequestParam(value = "invoiceId") Long invoiceId) {
+        return ResponseEntity.ok(invoiceService.resendInvoice(invoiceId));
     }
 
     @DeleteMapping("/{id}")

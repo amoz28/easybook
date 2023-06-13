@@ -68,7 +68,7 @@ public class InvoiceServiceImpl implements InvoiceService {
         context.setVariable("invoice", invoice);
         context.setVariable("user", user);
         context.setVariable("customer", customerDto);
-        return templateEngine.process("invoice-template", context);
+        return templateEngine.process("Invoice-template", context);
     }
 
     private byte[] generatePdfFromHtml(String htmlContent) throws Exception {
@@ -98,10 +98,15 @@ public class InvoiceServiceImpl implements InvoiceService {
         return getInvoiceDtos(userId, invoiceType);
     }
 
-    public List<InvoiceDto> getAllInvoiceByCustomerEmail(String email) {
+    public List<InvoiceDto> getAllInvoiceByCustomerIdAndType(Long customerId, String type) {
         long userId = getCurrentUserDetails().getId();
-        var customer = customerService.getCustomerByEmailAndUserId(email, userId);
-        return invoiceRepo.findAllInvoiceByUserIdAndCustomerId(userId, customer.getId())
+        InvoiceType invoiceType = type == null ? null : InvoiceType.valueOf(type);
+
+        List<Invoice> allUserInvoices = invoiceType == null
+                ? invoiceRepo.findAllInvoiceByUserIdAndCustomerId(userId, customerId)
+                : invoiceRepo.findAllInvoiceByUserIdAndCustomerIdAndType(userId, customerId, invoiceType);
+
+        return allUserInvoices
                 .stream()
                 .map(this::invoiceToDto)
                 .collect(Collectors.toList());
@@ -145,6 +150,7 @@ public class InvoiceServiceImpl implements InvoiceService {
         long userId = getCurrentUserDetails().getId();
         invoiceRepo.deleteByIdAndUserId(invoiceId, userId);
         return GeneralResponse.builder()
+                .status(HttpStatus.OK.value())
                 .message("Invoice deleted")
                 .build();
     }
@@ -195,10 +201,30 @@ public class InvoiceServiceImpl implements InvoiceService {
 
     @Override
     public GeneralResponse addPayment(Long invoiceId) {
-        invoiceRepo.findById(invoiceId)
-                .orElseThrow(() -> new CustomException(HttpStatus.NOT_FOUND, "Invoice not found"));
+        invoiceRepo.markInvoiceAsPaid(invoiceId);
         return GeneralResponse.builder()
+                .status(HttpStatus.OK.value())
                 .message("Payment was successfully updated")
                 .build();
     }
+
+    @Override
+    public GeneralResponse resendInvoice(Long invoiceId){
+        var invoice = invoiceRepo.findById(invoiceId)
+                .orElseThrow(() -> new CustomException(HttpStatus.NOT_FOUND, "Invoice not found"));
+        var customerId = invoice.getCustomerId();
+        var user = getCurrentUserDetails();
+        long userId = user.getId();
+        var customer = customerService.getCustomerByIdAndUserId(customerId, userId);
+        String htmlContent = generateInvoiceHtml(invoice, user, customer);
+        try {
+            byte[] pdfBytes = generatePdfFromHtml(htmlContent);
+            emailService.sendEmailWithAttachment(pdfBytes, customer.getFirstname(), customer.getEmail());
+        } catch (Exception e) {
+            log.error("Exception Occurred generating invoice ", e);
+        }
+        return GeneralResponse.builder()
+                .message("Invoice has been resent")
+                .build();
+    };
 }
