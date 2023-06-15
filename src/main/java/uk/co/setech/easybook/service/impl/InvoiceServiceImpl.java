@@ -47,7 +47,7 @@ public class InvoiceServiceImpl implements InvoiceService {
     public InvoiceDto createInvoice(InvoiceDto invoiceDto) {
         var user = getCurrentUserDetails();
         long userId = user.getId();
-        Integer customerId = invoiceDto.getCustomerId();
+        long customerId = invoiceDto.getCustomerId();
         var customer = customerService.getCustomerByIdAndUserId(customerId, userId);
         var invoice = dtoToInvoice(invoiceDto, new Invoice());
         invoice.setUserId(userId);
@@ -159,7 +159,7 @@ public class InvoiceServiceImpl implements InvoiceService {
         BeanUtils.copyProperties(invoice, invoiceDto);
         var invoiceItems = invoice.getItems().stream()
                 .map(itemsDto -> ItemsDto.builder()
-                        .id(Math.toIntExact(itemsDto.getId()))
+                        .id(itemsDto.getId())
                         .service(itemsDto.getService())
                         .description(itemsDto.getDescription())
                         .quantity(itemsDto.getQuantity())

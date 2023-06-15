@@ -22,7 +22,7 @@ public class InvoiceDto {
     private List<ItemsDto> items;
     private String invoiceInfo;
     private boolean isInvoicePaid;
-    private Integer customerId;
+    private Long customerId;
     private InvoiceType type;
     private Long outstandingBalance;
 }

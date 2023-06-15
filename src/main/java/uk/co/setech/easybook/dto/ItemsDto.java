@@ -8,7 +8,7 @@ import lombok.Setter;
 @Setter
 @Builder
 public class ItemsDto {
-    private Integer id;
+    private Long id;
     private String service;
     private String description;
     private int quantity;

@@ -41,7 +41,7 @@ public class CustomerServiceImpl implements CustomerService {
 
     @Override
     public CustomerDto getCustomerByEmailAndUserId(String email, long userId) {
-        return customerRepo.findByEmailAndUserId(email, userId)
+        return customerRepo.findByEmailIgnoreCaseAndUserId(email, userId)
                 .map(this::customerToDto)
                 .orElseThrow(CUSTOMER_NOT_FOUND);
     }
@@ -73,7 +73,7 @@ public class CustomerServiceImpl implements CustomerService {
     @Override
     public CustomerDto updateCustomer(CustomerDto customerDto) {
         long userId = getCurrentUserDetails().getId();
-        var customer = customerRepo.findByEmailAndUserId(customerDto.getEmail(), userId)
+        var customer = customerRepo.findByEmailIgnoreCaseAndUserId(customerDto.getEmail(), userId)
                 .orElseThrow(CUSTOMER_NOT_FOUND);
 
         dtoToCustomer(customerDto, customer);
@@ -85,7 +85,7 @@ public class CustomerServiceImpl implements CustomerService {
     @Override
     public GeneralResponse deleteCustomerByEmail(String email) {
         long userId = getCurrentUserDetails().getId();
-        var customer = customerRepo.findByEmailAndUserId(email, userId)
+        var customer = customerRepo.findByEmailIgnoreCaseAndUserId(email, userId)
                 .orElseThrow(CUSTOMER_NOT_FOUND);
         customerRepo.delete(customer);
 
