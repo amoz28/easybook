@@ -6,7 +6,7 @@ import lombok.Data;
 @Data
 @Builder
 public class CustomerDto {
-    private Integer id;
+    private Long id;
     private String displayname;
     private String firstname;
     private String lastname;
@@ -16,6 +16,7 @@ public class CustomerDto {
     private String companyname;
     private String taxNumber;
     private String postcode;
+    private String city;
     private String county;
     private String country;
 }

@@ -18,6 +18,8 @@ public class Customer extends BaseEntity {
     private String companyname;
     private String taxNumber;
     private String postcode;
+    private String city;
+    private String county;
     private String country;
     @Column(nullable = false)
     private long userId;

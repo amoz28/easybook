@@ -2,6 +2,7 @@ package uk.co.setech.easybook.service;
 
 import uk.co.setech.easybook.dto.GeneralResponse;
 import uk.co.setech.easybook.dto.InvoiceDto;
+import uk.co.setech.easybook.dto.InvoicePaymentInfo;
 import uk.co.setech.easybook.enums.InvoiceType;
 
 import java.util.List;
@@ -28,4 +29,6 @@ public interface InvoiceService {
     GeneralResponse addPayment(Long invoiceId);
 
     GeneralResponse resendInvoice(Long invoiceId);
+
+    InvoicePaymentInfo getOverdueAndPaidInvoice(Long id, InvoiceType invoice);
 }
