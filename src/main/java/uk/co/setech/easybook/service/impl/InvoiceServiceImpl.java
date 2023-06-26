@@ -10,11 +10,7 @@ import org.springframework.stereotype.Service;
 import org.thymeleaf.TemplateEngine;
 import org.thymeleaf.context.Context;
 import org.xhtmlrenderer.pdf.ITextRenderer;
-import uk.co.setech.easybook.dto.CustomerDto;
-import uk.co.setech.easybook.dto.GeneralResponse;
-import uk.co.setech.easybook.dto.InvoiceDto;
-import uk.co.setech.easybook.dto.ItemsDto;
-import uk.co.setech.easybook.dto.UserDto;
+import uk.co.setech.easybook.dto.*;
 import uk.co.setech.easybook.email.EmailService;
 import uk.co.setech.easybook.enums.InvoiceType;
 import uk.co.setech.easybook.exception.CustomException;
@@ -208,7 +204,7 @@ public class InvoiceServiceImpl implements InvoiceService {
     }
 
     @Override
-    public GeneralResponse resendInvoice(Long invoiceId){
+    public GeneralResponse resendInvoice(Long invoiceId) {
         var invoice = invoiceRepo.findById(invoiceId)
                 .orElseThrow(() -> new CustomException(HttpStatus.NOT_FOUND, "Invoice not found"));
         var customerId = invoice.getCustomerId();
@@ -225,5 +221,11 @@ public class InvoiceServiceImpl implements InvoiceService {
         return GeneralResponse.builder()
                 .message("Invoice has been resent")
                 .build();
-    };
+    }
+
+    @Override
+    public InvoicePaymentInfo getOverdueAndPaidInvoice(Long id, InvoiceType type) {
+        return invoiceRepo.getOverdueAndPaidInvoice(id, type.toString());
+    }
+
 }

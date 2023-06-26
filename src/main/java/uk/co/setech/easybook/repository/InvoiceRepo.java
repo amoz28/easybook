@@ -6,6 +6,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.transaction.annotation.Transactional;
+import uk.co.setech.easybook.dto.InvoicePaymentInfo;
 import uk.co.setech.easybook.enums.InvoiceType;
 import uk.co.setech.easybook.model.Invoice;
 
@@ -38,4 +39,10 @@ public interface InvoiceRepo extends JpaRepository<Invoice, Long> {
     @Transactional
     @Query("UPDATE Invoice SET isInvoicePaid = true WHERE id = :invoiceId")
     void markInvoiceAsPaid(Long invoiceId);
+
+
+    @Query(value = "SELECT(" +
+            "SELECT COALESCE(SUM(total),0) FROM invoice WHERE is_invoice_paid = false AND duedate < current_timestamp and user_id=:userId and type =:type) AS overdueInvoiceTotal, " +
+            "(SELECT COALESCE(SUM(total), 0) FROM invoice WHERE is_invoice_paid = true and user_id=:userId and type =:type) AS paidInvoiceTotal", nativeQuery = true)
+    InvoicePaymentInfo getOverdueAndPaidInvoice(Long userId, String type);
 }

@@ -32,6 +32,7 @@ import uk.co.setech.easybook.service.InvoiceService;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
+import java.util.List;
 import java.util.Random;
 
 @Service
@@ -109,18 +110,17 @@ public class AuthenticationService {
                 .orElseThrow(() ->
                         new UsernameNotFoundException(String.format(USER_NOT_FOUND, request.getEmail())));
 
-        var totalOverdueInvoices = invoiceService.getInvoiceDtos(user.getId(), InvoiceType.INVOICE)
-                .stream()
-                .filter(invoiceDto -> !invoiceDto.isInvoicePaid()
-                        && invoiceDto.getDuedate().isAfter(LocalDate.now()))
-                .mapToDouble(InvoiceDto::getTotal)
-                .sum();
-
-        var totalPaidInvoices = invoiceService.getInvoiceDtos(user.getId(), InvoiceType.INVOICE)
-                .stream()
-                .filter(InvoiceDto::isInvoicePaid)
-                .mapToDouble(InvoiceDto::getTotal)
-                .sum();
+        var allInvoices = invoiceService.getOverdueAndPaidInvoice(user.getId(), InvoiceType.INVOICE);
+        double totalOverdueInvoices = 0;
+        double totalPaidInvoices = 0;
+//        for (InvoiceDto invoice : allInvoices) {
+//            if(!invoice.isInvoicePaid() && invoice.getDuedate().isBefore(LocalDate.now())){
+//                totalOverdueInvoices += invoice.getTotal();
+//            }
+//            else if (invoice.isInvoicePaid()){
+//                totalPaidInvoices += invoice.getTotal();
+//            }
+//        }
 
         var recentInvoice = invoiceService.getAllInvoicesWithSize(0,10, "INVOICE", "ESTIMATE");
 
@@ -131,14 +131,14 @@ public class AuthenticationService {
                 InvoiceSummary.builder()
                         .title("Overdue Invoices")
                         .image("wallet")
-                        .amount(totalOverdueInvoices)
+                        .amount(allInvoices.getOverdueInvoiceTotal())
                         .build());
 
         shortCutList.add(
                 InvoiceSummary.builder()
                         .title("Paid Invoices")
                         .image("wallet")
-                        .amount(totalPaidInvoices)
+                        .amount(allInvoices.getPaidInvoiceTotal())
                         .build());
 
         return AuthenticationResponse.builder()
