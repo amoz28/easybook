@@ -38,7 +38,7 @@ public class Invoice extends BaseEntity {
     private List<InvoiceItem> items;
 
     @Column(nullable = false)
-    private Integer customerId;
+    private Long customerId;
 
     @Column(nullable = false)
     private long userId;

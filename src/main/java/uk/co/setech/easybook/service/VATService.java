@@ -1,4 +1,4 @@
-package uk.co.setech.easybook.service.impl;
+package uk.co.setech.easybook.service;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.beans.BeanUtils;

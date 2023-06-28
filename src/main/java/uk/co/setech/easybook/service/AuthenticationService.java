@@ -1,4 +1,4 @@
-package uk.co.setech.easybook.service.impl;
+package uk.co.setech.easybook.service;
 
 
 import lombok.RequiredArgsConstructor;
@@ -15,7 +15,6 @@ import uk.co.setech.easybook.commons.security.JwtService;
 import uk.co.setech.easybook.dto.AuthenticationRequest;
 import uk.co.setech.easybook.dto.AuthenticationResponse;
 import uk.co.setech.easybook.dto.GeneralResponse;
-import uk.co.setech.easybook.dto.InvoiceDto;
 import uk.co.setech.easybook.dto.InvoiceSummary;
 import uk.co.setech.easybook.dto.RegisterRequest;
 import uk.co.setech.easybook.dto.VerificationRequest;
@@ -27,13 +26,11 @@ import uk.co.setech.easybook.model.ConfirmOtp;
 import uk.co.setech.easybook.model.User;
 import uk.co.setech.easybook.repository.ConfirmOtpRepo;
 import uk.co.setech.easybook.repository.UserRepo;
-import uk.co.setech.easybook.service.InvoiceService;
 
-import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
-import java.util.List;
 import java.util.Random;
+import java.util.concurrent.CompletableFuture;
 
 @Service
 @RequiredArgsConstructor
@@ -41,7 +38,7 @@ public class AuthenticationService {
 
     private static final String USER_NOT_FOUND = "User with email: %s Not Found";
     private static final String USER_ALREADY_EXIST = "User with email: %s Already Exists";
-    private static final String CONTINUE_REGISTRSTION = "User with email: %s has an incomplete Registration";
+    private static final String CONTINUE_REGISTRATION = "User with email: %s has an incomplete Registration";
     private final UserRepo userRepo;
     private final PasswordEncoder passwordEncoder;
     private final AuthenticationManager authenticationManager;
@@ -59,7 +56,7 @@ public class AuthenticationService {
         if (userObj.isPresent() && userObj.get().isEnabled()) {
             throw new CustomException(HttpStatus.FORBIDDEN, String.format(USER_ALREADY_EXIST, request.getEmail()));
         } else if (userObj.isPresent() && !userObj.get().isEnabled()) {
-            throw new CustomException(HttpStatus.CONFLICT, String.format(CONTINUE_REGISTRSTION, request.getEmail()));
+            throw new CustomException(HttpStatus.CONFLICT, String.format(CONTINUE_REGISTRATION, request.getEmail()));
         }
 
         var user = User.builder()
@@ -75,7 +72,7 @@ public class AuthenticationService {
 
         String subject = "Account Verification OTP";
         String message = "Please enter the OTP to complete you email verification process " + otp;
-        emailService.send(user.getFirstName(), user.getEmail(), message, subject);
+        CompletableFuture.runAsync(() -> emailService.send(user.getFirstName(), user.getEmail(), message, subject));
 
         return GeneralResponse
                 .builder()
@@ -91,7 +88,7 @@ public class AuthenticationService {
         var confirmationOtp = ConfirmOtp.builder()
                 .otp(otp)
                 .createdAt(LocalDateTime.now())
-                .expiresAt(LocalDateTime.now().plusMinutes(60 * 24))
+                .expiresAt(LocalDateTime.now().plusMinutes(5))
                 .user(user)
                 .build();
 
@@ -111,16 +108,6 @@ public class AuthenticationService {
                         new UsernameNotFoundException(String.format(USER_NOT_FOUND, request.getEmail())));
 
         var allInvoices = invoiceService.getOverdueAndPaidInvoice(user.getId(), InvoiceType.INVOICE);
-        double totalOverdueInvoices = 0;
-        double totalPaidInvoices = 0;
-//        for (InvoiceDto invoice : allInvoices) {
-//            if(!invoice.isInvoicePaid() && invoice.getDuedate().isBefore(LocalDate.now())){
-//                totalOverdueInvoices += invoice.getTotal();
-//            }
-//            else if (invoice.isInvoicePaid()){
-//                totalPaidInvoices += invoice.getTotal();
-//            }
-//        }
 
         var recentInvoice = invoiceService.getAllInvoicesWithSize(0,10, "INVOICE", "ESTIMATE");
 
@@ -163,7 +150,7 @@ public class AuthenticationService {
                 .orElseThrow(() -> new UsernameNotFoundException(String.format(USER_NOT_FOUND, request.email())));
 
         String confirmationMsg = confirmOtpService.verifyOtpByUserId(request.otp(), user);
-        user.setEnabled(Boolean.TRUE);
+        user.setEnabled(true);
         userRepo.save(user);
 
         return GeneralResponse.builder()
@@ -186,7 +173,7 @@ public class AuthenticationService {
                 .build();
     }
 
-    @CachePut(value = "otpCache", key = "#userId")
+    @CachePut(value = "otpCache", key = "#userId") //TODO: what does this do?
     public GeneralResponse forgotPassword(String email) {
         User user = userRepo.findByEmail(email)
                 .orElseThrow(() -> new UsernameNotFoundException(String.format(USER_NOT_FOUND, email)));
@@ -197,14 +184,14 @@ public class AuthenticationService {
                 .map(confirmOtp -> {
                     confirmOtp.setOtp(otp);
                     confirmOtp.setCreatedAt(LocalDateTime.now());
-                    confirmOtp.setExpiresAt(LocalDateTime.now().plusMinutes(60 * 24));
+                    confirmOtp.setExpiresAt(LocalDateTime.now().plusMinutes(5));
                     confirmOtp.setUser(user);
                     return confirmOtp;
                 })
                 .orElseGet(() -> ConfirmOtp.builder()
                         .otp(otp)
                         .createdAt(LocalDateTime.now())
-                        .expiresAt(LocalDateTime.now().plusMinutes(60 * 24))
+                        .expiresAt(LocalDateTime.now().plusMinutes(5))
                         .user(user)
                         .build()
                 );
@@ -265,7 +252,7 @@ public class AuthenticationService {
 //      @TODO ENSURE USER ARE NOT ABLE TO RESET PASSWORD TWICE WITHOUT CALLING FORGOT PASSWORD TWICE
         var confOtp = confirmOtpRepo.findByUser(user)
                 .orElseThrow(() -> new CustomException(HttpStatus.NOT_FOUND, "Invalid UserId"));
-        if (LocalDateTime.now().isAfter(confOtp.getConfirmedAt().plusMinutes(5))) {
+        if (LocalDateTime.now().isAfter(confOtp.getConfirmedAt().plusMinutes(5))) { //TODO: What does this logic do?
             throw new CustomException(HttpStatus.BAD_REQUEST, "Request Timed Out please try again");
         }
 

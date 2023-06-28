@@ -43,19 +43,9 @@ public class InvoiceServiceImpl implements InvoiceService {
     public InvoiceDto createInvoice(InvoiceDto invoiceDto) {
         var user = getCurrentUserDetails();
         long userId = user.getId();
-        long customerId = invoiceDto.getCustomerId();
-        var customer = customerService.getCustomerByIdAndUserId(customerId, userId);
         var invoice = dtoToInvoice(invoiceDto, new Invoice());
         invoice.setUserId(userId);
         invoice = invoiceRepo.save(invoice);
-
-        String htmlContent = generateInvoiceHtml(invoice, user, customer);
-        try {
-            byte[] pdfBytes = generatePdfFromHtml(htmlContent);
-            emailService.sendEmailWithAttachment(pdfBytes, customer.getFirstname(), customer.getEmail());
-        } catch (Exception e) {
-            log.error("Exception Occurred generating invoice ", e);
-        }
         return invoiceToDto(invoice);
     }
 

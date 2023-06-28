@@ -1,4 +1,4 @@
-package uk.co.setech.easybook.service.impl;
+package uk.co.setech.easybook.service;
 
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -47,7 +47,7 @@ public class ConfirmOtpService {
         otpCheck.setOtp(otp);
         otpCheck.setConfirmedAt(null);
         otpCheck.setCreatedAt(LocalDateTime.now());
-        otpCheck.setExpiresAt(LocalDateTime.now().plusMinutes(60 * 24));
+        otpCheck.setExpiresAt(LocalDateTime.now().plusMinutes(5));
         confirmationOtpRepository.save(otpCheck);
     }
 }
