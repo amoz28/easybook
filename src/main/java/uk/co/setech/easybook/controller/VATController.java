@@ -12,7 +12,7 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import uk.co.setech.easybook.dto.VATDto;
 import uk.co.setech.easybook.dto.GeneralResponse;
-import uk.co.setech.easybook.service.impl.VATService;
+import uk.co.setech.easybook.service.VATService;
 
 import java.util.List;
 

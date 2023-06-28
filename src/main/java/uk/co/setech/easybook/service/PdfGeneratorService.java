@@ -1,4 +1,4 @@
-package uk.co.setech.easybook.service.impl;
+package uk.co.setech.easybook.service;
 
 import org.xhtmlrenderer.pdf.ITextRenderer;
 import org.springframework.stereotype.Service;

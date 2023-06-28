@@ -40,3 +40,7 @@ spring:
 
 app:
   email: amoz4christ@gmail.com
+
+invoice:
+  template:
+    path: /absolute/path/to/folder/containing/template/e.g/home/chibuezepaul/Projects/easybook/src/main/resources/templates
