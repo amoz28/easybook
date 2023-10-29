@@ -30,6 +30,10 @@ public class Invoice extends BaseEntity {
     private double total;
     @Column(nullable = false)
     private boolean isInvoicePaid;
+
+    @Column(nullable = false)
+    private boolean isInvoiceSent;
+
     private String invoiceInfo;
 
     @OneToMany(cascade = CascadeType.ALL)

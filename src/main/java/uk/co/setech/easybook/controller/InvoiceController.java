@@ -1,6 +1,9 @@
 package uk.co.setech.easybook.controller;
 
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpEntity;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 import uk.co.setech.easybook.dto.GeneralResponse;
@@ -15,7 +18,7 @@ import java.util.List;
 public class InvoiceController {
 
     private final InvoiceService invoiceService;
-
+    private final ObjectMapper objectMapper;
     @PostMapping
     public ResponseEntity<InvoiceDto> createInvoice(@RequestBody InvoiceDto invoice) {
         return ResponseEntity.ok(invoiceService.createInvoice(invoice));
@@ -54,6 +57,11 @@ public class InvoiceController {
     @PutMapping("/addPayment/{invoiceId}")
     public ResponseEntity<GeneralResponse> addPayment( @PathVariable Long invoiceId) {
         return ResponseEntity.ok(invoiceService.addPayment(invoiceId));
+    }
+
+    @PutMapping("/markAsSent/{invoiceId}")
+    public ResponseEntity<GeneralResponse> markAsSent( @PathVariable Long invoiceId) {
+        return ResponseEntity.ok(invoiceService.markAsSent(invoiceId));
     }
 
     @GetMapping("/resendInvoice")

@@ -73,7 +73,7 @@ public class CustomerServiceImpl implements CustomerService {
     @Override
     public CustomerDto updateCustomer(CustomerDto customerDto) {
         long userId = getCurrentUserDetails().getId();
-        var customer = customerRepo.findByEmailAndUserId(customerDto.getEmail(), userId)
+        var customer = customerRepo.findByIdAndUserId(customerDto.getId(), userId)
                 .orElseThrow(CUSTOMER_NOT_FOUND);
 
         dtoToCustomer(customerDto, customer);

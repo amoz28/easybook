@@ -45,4 +45,9 @@ public interface InvoiceRepo extends JpaRepository<Invoice, Long> {
             "SELECT COALESCE(SUM(total),0) FROM invoice WHERE is_invoice_paid = false AND duedate < current_timestamp and user_id=:userId and type =:type) AS overdueInvoiceTotal, " +
             "(SELECT COALESCE(SUM(total), 0) FROM invoice WHERE is_invoice_paid = true and user_id=:userId and type =:type) AS paidInvoiceTotal", nativeQuery = true)
     InvoicePaymentInfo getOverdueAndPaidInvoice(Long userId, String type);
+
+    @Modifying
+    @Transactional
+    @Query("UPDATE Invoice SET isInvoiceSent = true WHERE id = :invoiceId")
+    void markInvoiceAsSent(Long invoiceId);
 }

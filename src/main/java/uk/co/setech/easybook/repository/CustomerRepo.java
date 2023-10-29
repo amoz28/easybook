@@ -13,6 +13,7 @@ public interface CustomerRepo extends JpaRepository<Customer, Integer> {
     Optional<Customer> findByIdAndUserId(long id, long userId);
 
     Optional<Customer> findByEmailAndUserId(String email, long userId);
+    Optional<Customer>  findByIdAndUserId(String email, long userId);
 
     Page<Customer> findAllByUserId(long userId, Pageable pageable);
 

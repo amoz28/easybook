@@ -1,13 +1,13 @@
 package uk.co.setech.easybook.dto;
 
-import lombok.Builder;
-import lombok.Getter;
-import lombok.Setter;
+import lombok.*;
 import uk.co.setech.easybook.enums.Role;
 
 @Getter
 @Setter
 @Builder
+@NoArgsConstructor
+@AllArgsConstructor
 public class UserDto {
     private Long id;
     private String firstName;

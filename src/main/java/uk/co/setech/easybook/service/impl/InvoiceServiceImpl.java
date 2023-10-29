@@ -43,19 +43,9 @@ public class InvoiceServiceImpl implements InvoiceService {
     public InvoiceDto createInvoice(InvoiceDto invoiceDto) {
         var user = getCurrentUserDetails();
         long userId = user.getId();
-        Integer customerId = invoiceDto.getCustomerId();
-        var customer = customerService.getCustomerByIdAndUserId(customerId, userId);
         var invoice = dtoToInvoice(invoiceDto, new Invoice());
         invoice.setUserId(userId);
         invoice = invoiceRepo.save(invoice);
-
-        String htmlContent = generateInvoiceHtml(invoice, user, customer);
-        try {
-            byte[] pdfBytes = generatePdfFromHtml(htmlContent);
-            emailService.sendEmailWithAttachment(pdfBytes, customer.getFirstname(), customer.getEmail());
-        } catch (Exception e) {
-            log.error("Exception Occurred generating invoice ", e);
-        }
         return invoiceToDto(invoice);
     }
 
@@ -200,6 +190,17 @@ public class InvoiceServiceImpl implements InvoiceService {
         return GeneralResponse.builder()
                 .status(HttpStatus.OK.value())
                 .message("Payment was successfully updated")
+                .build();
+    }
+
+    @Override
+    public GeneralResponse markAsSent(Long invoiceId){
+        var invoice = invoiceRepo.findById(invoiceId)
+                .orElseThrow(() -> new CustomException(HttpStatus.NOT_FOUND, "Invoice not found"));
+        invoiceRepo.markInvoiceAsSent(invoiceId);
+        return GeneralResponse.builder()
+                .status(HttpStatus.OK.value())
+                .message("Invoice was sent successfully")
                 .build();
     }
 

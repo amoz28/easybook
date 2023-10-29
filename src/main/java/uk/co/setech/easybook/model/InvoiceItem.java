@@ -22,3 +22,4 @@ public class InvoiceItem extends BaseEntity {
     @JsonBackReference
     private Invoice invoice;
 }
+

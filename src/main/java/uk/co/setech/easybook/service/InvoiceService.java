@@ -28,6 +28,8 @@ public interface InvoiceService {
 
     GeneralResponse addPayment(Long invoiceId);
 
+    GeneralResponse markAsSent(Long invoiceId);
+
     GeneralResponse resendInvoice(Long invoiceId);
 
     InvoicePaymentInfo getOverdueAndPaidInvoice(Long id, InvoiceType invoice);
