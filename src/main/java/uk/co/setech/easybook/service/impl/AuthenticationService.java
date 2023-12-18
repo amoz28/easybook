@@ -2,7 +2,9 @@ package uk.co.setech.easybook.service.impl;
 
 
 import lombok.RequiredArgsConstructor;
+import org.springframework.cache.annotation.CacheEvict;
 import org.springframework.cache.annotation.CachePut;
+import org.springframework.cache.annotation.Cacheable;
 import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -19,6 +21,7 @@ import uk.co.setech.easybook.dto.InvoiceDto;
 import uk.co.setech.easybook.dto.InvoiceSummary;
 import uk.co.setech.easybook.dto.RegisterRequest;
 import uk.co.setech.easybook.dto.VerificationRequest;
+import uk.co.setech.easybook.email.EmailSender;
 import uk.co.setech.easybook.email.EmailService;
 import uk.co.setech.easybook.enums.InvoiceType;
 import uk.co.setech.easybook.enums.Role;
@@ -31,9 +34,7 @@ import uk.co.setech.easybook.service.InvoiceService;
 
 import java.time.LocalDate;
 import java.time.LocalDateTime;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Random;
+import java.util.*;
 
 @Service
 @RequiredArgsConstructor
@@ -49,9 +50,11 @@ public class AuthenticationService {
 
     private final InvoiceService invoiceService;
 
-    private final EmailService emailService;
+    private final EmailSender emailService;
     private final ConfirmOtpService confirmOtpService;
     private final ConfirmOtpRepo confirmOtpRepo;
+    private static final Map<String, String> otpCache = new HashMap<>();
+
 
     public GeneralResponse register(RegisterRequest request) {
         request.setEmail(request.getEmail().toLowerCase());
@@ -111,18 +114,9 @@ public class AuthenticationService {
                         new UsernameNotFoundException(String.format(USER_NOT_FOUND, request.getEmail())));
 
         var allInvoices = invoiceService.getOverdueAndPaidInvoice(user.getId(), InvoiceType.INVOICE);
-        double totalOverdueInvoices = 0;
-        double totalPaidInvoices = 0;
-//        for (InvoiceDto invoice : allInvoices) {
-//            if(!invoice.isInvoicePaid() && invoice.getDuedate().isBefore(LocalDate.now())){
-//                totalOverdueInvoices += invoice.getTotal();
-//            }
-//            else if (invoice.isInvoicePaid()){
-//                totalPaidInvoices += invoice.getTotal();
-//            }
-//        }
 
-        var recentInvoice = invoiceService.getAllInvoicesWithSize(0,10, "INVOICE", "ESTIMATE");
+//        var recentInvoice = invoiceService.getAllInvoicesWithSize(0,10, "INVOICE", "ESTIMATE");
+        var recentInvoice = invoiceService.getOverdueInvoicesWithSize(0,10, "INVOICE", "ESTIMATE");
 
         var jwtToken = jwtService.generateToken(user);
         var shortCutList = new ArrayList<InvoiceSummary>();
@@ -186,7 +180,7 @@ public class AuthenticationService {
                 .build();
     }
 
-    @CachePut(value = "otpCache", key = "#userId")
+//    @CachePut(value = "otpCache", key = "#userId")
     public GeneralResponse forgotPassword(String email) {
         User user = userRepo.findByEmail(email)
                 .orElseThrow(() -> new UsernameNotFoundException(String.format(USER_NOT_FOUND, email)));
@@ -282,4 +276,65 @@ public class AuthenticationService {
                 .build();
     }
 
+
+//    ========================================
+
+    @Cacheable(value = "otpCache", key = "#email")
+    public GeneralResponse forgotPassword1(String email) {
+        User user = userRepo.findByEmail(email)
+                .orElseThrow(() -> new UsernameNotFoundException(String.format(USER_NOT_FOUND, email)));
+
+        String otp = generateOtp();
+        saveOtpToCache(email, otp);
+        System.out.println("otp");
+        System.out.println(otp);
+        sendOtpByEmail(user, otp);
+
+        return GeneralResponse.builder()
+                .status(HttpStatus.OK.value())
+                .message("An OTP has been sent to your email for verification")
+                .build();
+    }
+
+    public GeneralResponse verifyOtp1(VerificationRequest request) {
+        String cachedOtp = getOtpFromCache(request.email());
+        System.out.println("cachedOtp");
+        System.out.println(cachedOtp);
+        if (cachedOtp != null && cachedOtp.equals(request.otp())) {
+            clearOtpCache(request.email());
+            // Perform additional actions, such as updating the password
+            return GeneralResponse.builder()
+                    .status(HttpStatus.OK.value())
+                    .message("OTP verified successfully")
+                    .build();
+        } else {
+            return GeneralResponse.builder()
+                    .status(HttpStatus.BAD_REQUEST.value())
+                    .message("Invalid OTP")
+                    .build();
+        }
+    }
+
+    private String generateOtp() {
+        return String.valueOf(new Random().nextInt(9000) + 1000);
+    }
+
+    private void saveOtpToCache(String email, String otp) {
+        otpCache.put(email, otp);
+    }
+
+    private String getOtpFromCache(String email) {
+        return otpCache.get(email);
+    }
+
+    public void clearOtpCache(String email) {
+        otpCache.remove(email);
+    }
+
+
+    private void sendOtpByEmail(User user, String otp) {
+        String subject = "Reset Password - OTP Verification";
+        String message = "You are about to reset your password, use this OTP to complete the reset process " + otp;
+        emailService.send(user.getFirstName(), user.getEmail(), message, subject);
+    }
 }

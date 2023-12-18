@@ -14,9 +14,9 @@
 #    database-platform: org.hibernate.dialect.MySQLDialect
 spring:
   datasource:
-    url: jdbc:postgresql://dpg-cjfu2lnr2b1s73b9v3v0-a.oregon-postgres.render.com:5432/easybook2
+    url: jdbc:postgresql://dpg-clcfagug1b2c73eui510-a.oregon-postgres.render.com:5432/easybook_490c
     username: easybook
-    password: x7sk8SgtuWWcBoUMroBpnHovJrz3IMz1
+    password: 01WvDXTHWnjdBjLelmdQPFbwFEZEho0Z
     driver-class-name: org.postgresql.Driver
   jpa:
     database-platform: org.hibernate.dialect.PostgreSQLDialect
@@ -25,18 +25,23 @@ spring:
     show-sql: false
 
   mail:
-    host: smtp.gmail.com
-    port: 587
-    username: amoz4christ@gmail.com
-    password: kawyhdntddbpbgil
+    host: server36.web-hosting.com
+    port: 465
+    username: EazyBook@softwareengineertechnology.co.uk
+    password: isiminO28
+    #    username: amoz4christ@gmail.com
+#    password: kawyhdntddbpbgil
     protocol: smtp
     properties:
       mail:
         smtp:
+          ssl:
+            enable: true
           auth: true
           starttls:
             enable: true
             required: true
 
 app:
-  email: amoz4christ@gmail.com
+  email: eazybook@softwareengineertechnology.co.uk
+#  email: amoz4christ@gmail.com

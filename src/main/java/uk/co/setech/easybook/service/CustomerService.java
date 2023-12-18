@@ -16,7 +16,7 @@ public interface CustomerService {
 
     List<CustomerDto> getAllCustomer();
 
-    CustomerDto updateCustomer(CustomerDto customerDto);
+    GeneralResponse updateCustomer(CustomerDto customerDto);
 
-    GeneralResponse deleteCustomerByEmail(String email);
+    GeneralResponse deleteCustomerByEmail(Long id);
 }

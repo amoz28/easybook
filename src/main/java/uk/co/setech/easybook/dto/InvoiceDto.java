@@ -1,8 +1,11 @@
 package uk.co.setech.easybook.dto;
 
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
 import lombok.Getter;
 import lombok.Setter;
 import uk.co.setech.easybook.enums.InvoiceType;
+import uk.co.setech.easybook.enums.PaymentType;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -25,5 +28,7 @@ public class InvoiceDto {
     private boolean isInvoiceSent;
     private Integer customerId;
     private InvoiceType type;
-    private Long outstandingBalance;
+    private double outstandingBalance;
+    private PaymentType paymentType;
+    private double amountPaid;
 }

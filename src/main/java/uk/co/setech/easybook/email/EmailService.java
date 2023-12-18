@@ -19,7 +19,7 @@ import uk.co.setech.easybook.exception.CustomException;
 public class EmailService implements EmailSender {
 
     private final JavaMailSender mailSender;
-    @Value("${mail.sender:amoz4christ@gmail.com}")
+    @Value("${spring.mail.username}")
     private String senderEmail;
 
     @Override
@@ -41,16 +41,18 @@ public class EmailService implements EmailSender {
     }
 
     @Override
+//    @Async
     public void sendEmailWithAttachment(byte[] invoicePdf, String name, String to) {
         try {
             MimeMessage message = mailSender.createMimeMessage();
             MimeMessageHelper helper = new MimeMessageHelper(message, true);
             helper.setTo(to);
             helper.setSubject("Invoice");
-            helper.setText("Dear " + name + ", Please find attached the invoice.");
+            helper.setText("Dear " + name + ", \n\nPlease find attached the invoice.");
             helper.setFrom(senderEmail);
             helper.addAttachment("invoice.pdf", new ByteArrayResource(invoicePdf));
             mailSender.send(message);
+            log.info("Email Sent");
         }catch (MessagingException e) {
             log.error("failed to send email", e);
             throw new CustomException(HttpStatus.INTERNAL_SERVER_ERROR, "failed to send email");

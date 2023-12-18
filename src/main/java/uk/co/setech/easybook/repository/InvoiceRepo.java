@@ -8,6 +8,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.transaction.annotation.Transactional;
 import uk.co.setech.easybook.dto.InvoicePaymentInfo;
 import uk.co.setech.easybook.enums.InvoiceType;
+import uk.co.setech.easybook.enums.PaymentType;
 import uk.co.setech.easybook.model.Invoice;
 
 import java.time.LocalDate;
@@ -25,10 +26,13 @@ public interface InvoiceRepo extends JpaRepository<Invoice, Long> {
     @Transactional
     void deleteByIdAndUserId(Long id, long userId);
 
+    @Transactional
+    void deleteByCustomerId(long userId);
+
     List<Invoice> findByIsInvoicePaidIsFalseAndLastReminderDateBefore(LocalDate date);
 
     Page<Invoice> findAllInvoiceByUserIdOrderByIdDesc(long userId, Pageable pageable);
-
+    Page<Invoice> findAllInvoiceByUserIdAndIsInvoicePaidOrderByDuedateDesc (long userId, boolean invoicePaid, Pageable pageable);
     Page<Invoice> findAllInvoiceByUserIdAndTypeInOrderByIdDesc(long userId, Pageable pageable, InvoiceType... type);
 
     List<Invoice> findAllInvoiceByUserIdAndCustomerIdOrderByIdDesc(long userId, long customerId);
@@ -37,8 +41,13 @@ public interface InvoiceRepo extends JpaRepository<Invoice, Long> {
 
     @Modifying
     @Transactional
-    @Query("UPDATE Invoice SET isInvoicePaid = true WHERE id = :invoiceId")
-    void markInvoiceAsPaid(Long invoiceId);
+    @Query("UPDATE Invoice SET isInvoicePaid = true, paymentType = :paymentType, amountPaid = :amountPaid WHERE id = :invoiceId")
+    void markInvoiceAsPaid(Long invoiceId, PaymentType paymentType, double amountPaid);
+
+    @Modifying
+    @Transactional
+    @Query("UPDATE Invoice SET paymentType = :paymentType, amountPaid = :amountPaid WHERE id = :invoiceId")
+    void markPartialPayment(Long invoiceId, PaymentType paymentType, double amountPaid);
 
 
     @Query(value = "SELECT(" +

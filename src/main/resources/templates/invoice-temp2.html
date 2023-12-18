@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8"></meta>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0"></meta>
+    <title>Invoice</title>
+    <style>
+        body {
+            font-family: 'Arial', sans-serif;
+            margin: 0;
+            padding: 0;
+        }
+
+        #invoice {
+            width: 90%;
+            margin: 20px auto;
+            /*border: 1px solid #ccc;*/
+            padding: 2px;
+            /*box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);*/
+        }
+
+        #header {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+
+        #logo {
+            max-width: 100px;
+            max-height: 100px;
+        }
+
+        #company-details {
+            text-align: right;
+            margin-bottom: 20px;
+        }
+
+        #customer-details {
+            margin-top: 20px;
+        }
+
+        #invoice-details {
+            margin-top: 20px;
+            border-collapse: collapse;
+            width: 100%;
+        }
+
+        #invoice-details th, #invoice-details td {
+            border: 1px solid #ccc;
+            padding: 10px;
+            text-align: left;
+        }
+
+        #total {
+            margin-top: 20px;
+            text-align: right;
+        }
+
+        #bank-details {
+            margin-top: 40px;
+            text-align: left;
+        }
+
+        #footer {
+            margin-top: 20px;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+<div id="invoice">
+    <div id="header">
+        <img class="img-responsive" alt="companyLogo" th:src="'data:image/png;base64,' + ${user.getCompanyLogo()}" style="width: 71px; border-radius: 43px;"></img>
+        <h1 style="background-color: black; color: white">Invoice</h1>
+    </div>
+
+    <div id="company-details">
+        <p><b><i>Pay To:</i></b><br/>
+            <b>[[${user.getCompanyName()}]]</b><br/>
+            [[${user.getPhoneNumber()}]]<br/>
+            [[${user.email}]]<br/>
+            [[${user.country}]]<br/>
+        </p>
+    </div>
+
+    <div id="customer-details">
+        <p><b><i>Invoice [[${customer.getId()+'/'+invoice.getId()}]] To:</i></b></p>
+        [[${customer.getFirstname()+" "+customer.getLastname()}]]<br/>
+        [[${customer.getAddress()}]]<br/>
+        [[${customer.getPostcode()}]]<br/>
+        [[${customer.getCountry()}]]<br/>
+        [[${customer.getPhonenumber()}]]<br/>
+        [[${customer.getEmail()}]]<br/>
+    </div>
+
+    <table id="invoice-details">
+        <thead>
+        <tr style="background-color: #999">
+            <th>S/N</th>
+            <th>Description</th>
+            <th>Quantity</th>
+            <th>Price</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr th:each="item, itemStat : ${invoice.items}">
+            <td class="tm_width_1" th:text="${itemStat.count}">1</td>
+            <td class="tm_width_6" th:text="${item.description}">Six web page designs and three times revision</td>
+            <td class="tm_width_1" th:text="${item.quantity}">1</td>
+            <td class="tm_width_2 tm_text_right" th:text="${'£'+item.price}">$350</td>
+        </tr>
+        <!-- Add more rows as needed -->
+        </tbody>
+    </table>
+
+    <div id="total">
+        <p>Subtotal: £[[${invoice.subtotal}]]<br/>
+        VAT: +£[[${invoice.vat}]]</p>
+        <h3>Total: £[[${invoice.total}]]</h3>
+    </div>
+
+    <div id="bank-details">
+        <p>
+            <b>Bank Details:</b><br/>
+            Account Name: [[${user.getAccountName()}]]<br/>
+            Account Number: [[${user.getAccountNo()}]]<br/>
+            Sort Code: [[${user.getSortCode()}]]<br/>
+            Due Date: [[${invoice.getDuedate()}]]
+        </p>
+    </div>
+
+    <div id="footer">
+        <p>Thank you for your business!</p>
+    </div>
+</div>
+</body>
+</html>

@@ -7,7 +7,10 @@ import io.jsonwebtoken.SignatureAlgorithm;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.http.HttpStatus;
+import org.springframework.security.authentication.InsufficientAuthenticationException;
 import org.springframework.stereotype.Service;
+import uk.co.setech.easybook.exception.CustomException;
 import uk.co.setech.easybook.model.User;
 
 import java.security.Key;
@@ -70,7 +73,7 @@ public class JwtService {
             log.error("ExpiredJwtException JWT Token Error ", e);
 //            errorMessage = "User Token Has Expired";
 //            servletRequest.setAttribute("actual-error", errorMessage);
-            throw e;
+            throw new InsufficientAuthenticationException("Invalid Jwt", e.getCause());
         }
 
 

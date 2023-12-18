@@ -6,23 +6,27 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.http.HttpStatus;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
 import org.springframework.stereotype.Service;
 import org.thymeleaf.TemplateEngine;
 import org.thymeleaf.context.Context;
 import org.xhtmlrenderer.pdf.ITextRenderer;
 import uk.co.setech.easybook.dto.*;
-import uk.co.setech.easybook.email.EmailService;
+import uk.co.setech.easybook.email.EmailSender;
 import uk.co.setech.easybook.enums.InvoiceType;
 import uk.co.setech.easybook.exception.CustomException;
 import uk.co.setech.easybook.model.Invoice;
 import uk.co.setech.easybook.model.InvoiceItem;
+import uk.co.setech.easybook.model.PaymentRequest;
 import uk.co.setech.easybook.repository.InvoiceRepo;
+import uk.co.setech.easybook.repository.UserRepo;
 import uk.co.setech.easybook.service.CustomerService;
 import uk.co.setech.easybook.service.InvoiceService;
 import uk.co.setech.easybook.utils.Utils;
 
 import java.io.ByteArrayOutputStream;
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -35,15 +39,22 @@ import static uk.co.setech.easybook.utils.Utils.getCurrentUserDetails;
 public class InvoiceServiceImpl implements InvoiceService {
 
     private final InvoiceRepo invoiceRepo;
-    private final EmailService emailService;
+    private final EmailSender emailService;
     private final CustomerService customerService;
     private final TemplateEngine templateEngine;
+
+    private final UserRepo userRepo;
+
+    private static final String USER_NOT_FOUND = "User with email: %s Not Found";
+
+    private static final String USER_ALREADY_EXIST = "User with email: %s Already Exists";
 
     @Override
     public InvoiceDto createInvoice(InvoiceDto invoiceDto) {
         var user = getCurrentUserDetails();
         long userId = user.getId();
         var invoice = dtoToInvoice(invoiceDto, new Invoice());
+//        invoice.setOutstandingBalance(invoice.getTotal());
         invoice.setUserId(userId);
         invoice = invoiceRepo.save(invoice);
         return invoiceToDto(invoice);
@@ -108,6 +119,62 @@ public class InvoiceServiceImpl implements InvoiceService {
         return invoices
                 .map(this::invoiceToDto)
                 .getContent();
+    }
+
+    @Override
+    public List<InvoiceDto> getOverdueInvoicesWithSize(int pageNo, int pageSize, String... type) {
+        long userId = getCurrentUserDetails().getId();
+        PageRequest pageable = PageRequest.of(pageNo, pageSize);
+        Page<Invoice> invoices = invoiceRepo.findAllInvoiceByUserIdAndIsInvoicePaidOrderByDuedateDesc(userId, false, pageable);
+        return invoices
+                .stream()
+                .map(this::invoiceToDto)
+                .collect(Collectors.toList());
+    }
+
+    @Override
+    public AuthenticationResponse getUserProfile() {
+        String email = getCurrentUserDetails().getEmail();
+        System.out.println(getCurrentUserDetails());
+        var user = userRepo.findByEmail(email)
+                .orElseThrow(() ->
+                        new UsernameNotFoundException(String.format(USER_NOT_FOUND, email)));
+
+        var allInvoices = getOverdueAndPaidInvoice(user.getId(), InvoiceType.INVOICE);
+
+//        var recentInvoice = invoiceService.getAllInvoicesWithSize(0,10, "INVOICE", "ESTIMATE");
+        var recentInvoice = getOverdueInvoicesWithSize(0,10, "INVOICE", "ESTIMATE");
+
+        var shortCutList = new ArrayList<InvoiceSummary>();
+
+        shortCutList.add(
+                InvoiceSummary.builder()
+                        .title("Overdue Invoices")
+                        .image("wallet")
+                        .amount(allInvoices.getOverdueInvoiceTotal())
+                        .build());
+
+        shortCutList.add(
+                InvoiceSummary.builder()
+                        .title("Paid Invoices")
+                        .image("wallet")
+                        .amount(allInvoices.getPaidInvoiceTotal())
+                        .build());
+
+        return AuthenticationResponse.builder()
+                .firstname(user.getFirstName())
+                .lastname(user.getLastName())
+                .email(email)
+                .phoneNumber(user.getPhoneNumber())
+                .address(user.getCompanyAddress())
+                .postCode(user.getPostCode())
+                .country(user.getCountry())
+                .companyLogo(user.getCompanyLogo())
+                .companyName(user.getCompanyName())
+                .extraData(shortCutList)
+                .recentInvoice(recentInvoice)
+                .status(HttpStatus.OK.value())
+                .build();
     }
 
     @Override
@@ -185,9 +252,14 @@ public class InvoiceServiceImpl implements InvoiceService {
     }
 
     @Override
-    public GeneralResponse addPayment(Long invoiceId) {
-        invoiceRepo.markInvoiceAsPaid(invoiceId);
-        return GeneralResponse.builder()
+    public GeneralResponse addPayment(PaymentRequest paymentRequest) {
+        var invoice = invoiceRepo.findById(paymentRequest.invoiceId())
+                .orElseThrow(() -> new CustomException(HttpStatus.NOT_FOUND, "Invoice not found"));
+        if((invoice.getAmountPaid() + paymentRequest.amountPaid())-invoice.getTotal() == 0){
+            invoiceRepo.markInvoiceAsPaid(paymentRequest.invoiceId(), paymentRequest.paymentType(), paymentRequest.amountPaid());
+        }else {
+            invoiceRepo.markPartialPayment(paymentRequest.invoiceId(), paymentRequest.paymentType(), paymentRequest.amountPaid());
+        }return GeneralResponse.builder()
                 .status(HttpStatus.OK.value())
                 .message("Payment was successfully updated")
                 .build();
@@ -205,7 +277,7 @@ public class InvoiceServiceImpl implements InvoiceService {
     }
 
     @Override
-    public GeneralResponse resendInvoice(Long invoiceId) {
+    public GeneralResponse sendInvoice(Long invoiceId) {
         var invoice = invoiceRepo.findById(invoiceId)
                 .orElseThrow(() -> new CustomException(HttpStatus.NOT_FOUND, "Invoice not found"));
         var customerId = invoice.getCustomerId();
@@ -214,6 +286,7 @@ public class InvoiceServiceImpl implements InvoiceService {
         var customer = customerService.getCustomerByIdAndUserId(customerId, userId);
         String htmlContent = generateInvoiceHtml(invoice, user, customer);
         try {
+            log.info("Sending mail...");
             byte[] pdfBytes = generatePdfFromHtml(htmlContent);
             emailService.sendEmailWithAttachment(pdfBytes, customer.getFirstname(), customer.getEmail());
         } catch (Exception e) {

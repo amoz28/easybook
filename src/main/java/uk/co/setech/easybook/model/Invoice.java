@@ -11,6 +11,7 @@ import jakarta.persistence.OneToMany;
 import lombok.Getter;
 import lombok.Setter;
 import uk.co.setech.easybook.enums.InvoiceType;
+import uk.co.setech.easybook.enums.PaymentType;
 
 import java.time.LocalDate;
 import java.util.List;
@@ -49,4 +50,12 @@ public class Invoice extends BaseEntity {
 
     @Enumerated(EnumType.STRING)
     private InvoiceType type;
+
+//    private double outstandingBalance;
+
+    @Enumerated(EnumType.STRING)
+    private PaymentType paymentType;
+
+    @Column(nullable = false)
+    private double amountPaid = 0.00;
 }

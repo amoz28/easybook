@@ -1,9 +1,8 @@
 package uk.co.setech.easybook.service;
 
-import uk.co.setech.easybook.dto.GeneralResponse;
-import uk.co.setech.easybook.dto.InvoiceDto;
-import uk.co.setech.easybook.dto.InvoicePaymentInfo;
+import uk.co.setech.easybook.dto.*;
 import uk.co.setech.easybook.enums.InvoiceType;
+import uk.co.setech.easybook.model.PaymentRequest;
 
 import java.util.List;
 
@@ -18,6 +17,9 @@ public interface InvoiceService {
 
     List<InvoiceDto> getAllInvoicesWithSize(int pageNo, int pageSize, String... type);
 
+    List<InvoiceDto> getOverdueInvoicesWithSize(int pageNo, int pageSize, String... type);
+
+    public AuthenticationResponse getUserProfile();
     List<InvoiceDto> getInvoiceDtos(long userId, InvoiceType invoiceType);
 
     InvoiceDto getInvoiceById(long invoiceId);
@@ -26,11 +28,11 @@ public interface InvoiceService {
 
     void sendInvoiceReminder();
 
-    GeneralResponse addPayment(Long invoiceId);
+    GeneralResponse addPayment(PaymentRequest paymentRequest);
 
     GeneralResponse markAsSent(Long invoiceId);
 
-    GeneralResponse resendInvoice(Long invoiceId);
+    GeneralResponse sendInvoice(Long invoiceId);
 
     InvoicePaymentInfo getOverdueAndPaidInvoice(Long id, InvoiceType invoice);
 }

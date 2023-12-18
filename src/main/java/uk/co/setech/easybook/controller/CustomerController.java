@@ -34,7 +34,7 @@ public class CustomerController {
     }
 
     @PutMapping
-    public ResponseEntity<CustomerDto> updateCustomer(
+    public ResponseEntity<GeneralResponse> updateCustomer(
             @RequestBody CustomerDto customerDto
     ) {
         return ResponseEntity.ok(customerService.updateCustomer(customerDto));
@@ -71,8 +71,8 @@ public class CustomerController {
 
     @DeleteMapping
     public ResponseEntity<GeneralResponse> deleteCustomersDetails(
-            @RequestParam String email
+            @RequestParam Long id
     ) {
-        return ResponseEntity.ok(customerService.deleteCustomerByEmail(email));
+        return ResponseEntity.ok(customerService.deleteCustomerByEmail(id));
     }
 }

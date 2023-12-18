@@ -10,6 +10,7 @@ import uk.co.setech.easybook.dto.GeneralResponse;
 import uk.co.setech.easybook.exception.CustomException;
 import uk.co.setech.easybook.model.Customer;
 import uk.co.setech.easybook.repository.CustomerRepo;
+import uk.co.setech.easybook.repository.InvoiceRepo;
 import uk.co.setech.easybook.service.CustomerService;
 import uk.co.setech.easybook.utils.Utils;
 
@@ -24,6 +25,8 @@ import static uk.co.setech.easybook.utils.Utils.getCurrentUserDetails;
 public class CustomerServiceImpl implements CustomerService {
 
     private final CustomerRepo customerRepo;
+    private final InvoiceRepo invoiceRepo;
+
     private final Supplier<CustomException> CUSTOMER_NOT_FOUND = () -> new CustomException(HttpStatus.NOT_FOUND, "Customer not found");
 
     @Override
@@ -71,24 +74,35 @@ public class CustomerServiceImpl implements CustomerService {
     }
 
     @Override
-    public CustomerDto updateCustomer(CustomerDto customerDto) {
+    public GeneralResponse updateCustomer(CustomerDto customerDto) {
         long userId = getCurrentUserDetails().getId();
         var customer = customerRepo.findByIdAndUserId(customerDto.getId(), userId)
                 .orElseThrow(CUSTOMER_NOT_FOUND);
 
         dtoToCustomer(customerDto, customer);
-        var savedCustomer = customerRepo.save(customer);
+        customerRepo.save(customer);
 
-        return customerToDto(savedCustomer);
+//        return customerToDto(savedCustomer);
+        return GeneralResponse.builder()
+                .status(HttpStatus.OK.value())
+                .message("Customer Updated")
+                .build();
     }
 
     @Override
-    public GeneralResponse deleteCustomerByEmail(String email) {
-        long userId = getCurrentUserDetails().getId();
-        var customer = customerRepo.findByEmailAndUserId(email, userId)
-                .orElseThrow(CUSTOMER_NOT_FOUND);
-        customerRepo.delete(customer);
-
+    public GeneralResponse deleteCustomerByEmail(Long id) {
+        try {
+            long userId = getCurrentUserDetails().getId();
+            var customer = customerRepo.findByIdAndUserId(id, userId)
+                    .orElseThrow(CUSTOMER_NOT_FOUND);
+            invoiceRepo.deleteByCustomerId(customer.getId());
+            customerRepo.delete(customer);
+        }catch (Exception e){
+            return GeneralResponse.builder()
+                    .status(HttpStatus.INTERNAL_SERVER_ERROR.value())
+                    .message("Deletion complete")
+                    .build();
+        }
         return GeneralResponse.builder()
                 .status(HttpStatus.OK.value())
                 .message("Customer deleted")
