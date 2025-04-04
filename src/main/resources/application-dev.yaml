@@ -12,6 +12,8 @@
 #        format_sql: true
 #    database: mysql
 #    database-platform: org.hibernate.dialect.MySQLDialect
+server:
+  port: 8081
 spring:
   datasource:
     url: jdbc:postgresql://dpg-cvm24o3e5dus73aebh9g-a.oregon-postgres.render.com:5432/easybook_636l
