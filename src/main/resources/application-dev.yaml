@@ -14,7 +14,7 @@
 #    database-platform: org.hibernate.dialect.MySQLDialect
 spring:
   datasource:
-    url: jdbc:postgresql://dpg-cvm24o3e5dus73aebh9g-a.oregon-postgres.render.com:5432/easybook
+    url: jdbc:postgresql://dpg-cvm24o3e5dus73aebh9g-a.oregon-postgres.render.com:5432/easybook_636l
     username: easybook_636l_user
     password: PnauLLUELsqV6XswHDI9xVEOm9wPgDaX
     driver-class-name: org.postgresql.Driver
@@ -28,7 +28,7 @@ spring:
     host: smtp.gmail.com
     port: 587
     username: amoz4christ@gmail.com
-    password: bbyswiazoqyjbtlc
+    password: lnwjuoilfazugagu
     protocol: smtp
     properties:
       mail:
