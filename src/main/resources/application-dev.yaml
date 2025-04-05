@@ -1,8 +1,8 @@
 #spring:
 #  datasource:
 #    url: jdbc:mysql://us-cdbr-east-06.cleardb.net:3306/heroku_1eb973b559fad20
-#    username: b2958561bbea94
-#    password: 88a5c940
+#    username: uname
+#    password: pword
 #  jpa:
 #    hibernate:
 #      ddl-auto: update
@@ -12,10 +12,27 @@
 #        format_sql: true
 #    database: mysql
 #    database-platform: org.hibernate.dialect.MySQLDialect
+
+#  mail:
+#     host: smtp.gmail.com
+#     port: 587
+#     username: test@test.com
+    # password: pword
+# 
+#     protocol: smtp
+#     properties:
+#       mail:
+#         smtp:
+#           auth: true
+#           starttls:
+#             enable: true
+#             required: true
+
+# app:
+#   email: test@test.com
 spring:
   datasource:
     url: jdbc:postgresql://dpg-cvm24o3e5dus73aebh9g-a.oregon-postgres.render.com:5432/easybook_636l
-    username: easybook_636l_user
     driver-class-name: org.postgresql.Driver
   jpa:
     database-platform: org.hibernate.dialect.PostgreSQLDialect
@@ -26,7 +43,6 @@ spring:
   mail:
     host: smtp.gmail.com
     port: 587
-    username: amoz4christ@gmail.com
     protocol: smtp
     properties:
       mail:
@@ -36,5 +52,4 @@ spring:
             enable: true
             required: true
 
-app:
-  email: amoz4christ@gmail.com
+
