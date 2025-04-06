@@ -52,4 +52,6 @@ spring:
             enable: true
             required: true
 
-
+invoice:
+  template:
+    path: /absolute/path/to/folder/containing/template/e.g/home/chibuezepaul/Projects/easybook/src/main/resources/templates
