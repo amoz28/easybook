@@ -24,6 +24,7 @@ public class Invoice extends BaseEntity {
     private LocalDate lastReminderDate;
     private Double rate;
     private Double vat;
+    private double tax;
     @Column(nullable = false)
     private double subtotal;
     @Column(nullable = false)
