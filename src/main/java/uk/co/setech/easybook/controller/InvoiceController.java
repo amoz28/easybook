@@ -11,6 +11,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import uk.co.setech.easybook.dto.AuthenticationResponse;
 import uk.co.setech.easybook.dto.GeneralResponse;
 import uk.co.setech.easybook.dto.InvoiceDto;
 import uk.co.setech.easybook.service.InvoiceService;
@@ -72,5 +73,10 @@ public class InvoiceController {
     @DeleteMapping("/{id}")
     public ResponseEntity<GeneralResponse> deleteInvoice(@PathVariable Long id) {
         return ResponseEntity.ok(invoiceService.deleteInvoiceById(id));
+    }
+
+    @GetMapping("/userProfile")
+    public ResponseEntity<AuthenticationResponse> refreshUser() {
+        return ResponseEntity.ok(invoiceService.refreshUser());
     }
 }

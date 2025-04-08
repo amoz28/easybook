@@ -1,5 +1,6 @@
 package uk.co.setech.easybook.service;
 
+import uk.co.setech.easybook.dto.AuthenticationResponse;
 import uk.co.setech.easybook.dto.GeneralResponse;
 import uk.co.setech.easybook.dto.InvoiceDto;
 import uk.co.setech.easybook.dto.InvoicePaymentInfo;
@@ -31,4 +32,7 @@ public interface InvoiceService {
     GeneralResponse resendInvoice(Long invoiceId);
 
     InvoicePaymentInfo getOverdueAndPaidInvoice(Long id, InvoiceType invoice);
+
+    AuthenticationResponse refreshUser();
+
 }

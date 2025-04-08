@@ -23,6 +23,7 @@ import uk.co.setech.easybook.utils.Utils;
 
 import java.io.ByteArrayOutputStream;
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
@@ -186,6 +187,7 @@ public class InvoiceServiceImpl implements InvoiceService {
 
     @Override
     public GeneralResponse addPayment(Long invoiceId) {
+//        @TODO to be improve to take partial paymet
         invoiceRepo.markInvoiceAsPaid(invoiceId);
         return GeneralResponse.builder()
                 .status(HttpStatus.OK.value())
@@ -217,5 +219,46 @@ public class InvoiceServiceImpl implements InvoiceService {
     public InvoicePaymentInfo getOverdueAndPaidInvoice(Long id, InvoiceType type) {
         return invoiceRepo.getOverdueAndPaidInvoice(id, type.toString());
     }
+
+    @Override
+    public AuthenticationResponse refreshUser() {
+        var user = getCurrentUserDetails();
+
+        var allInvoices = getOverdueAndPaidInvoice(user.getId(), InvoiceType.INVOICE);
+
+        var recentInvoice = getAllInvoicesWithSize(0,10, "INVOICE", "ESTIMATE");
+
+        var shortCutList = new ArrayList<InvoiceSummary>();
+
+        shortCutList.add(
+                InvoiceSummary.builder()
+                        .title("Overdue Invoices")
+                        .image("wallet")
+                        .amount(allInvoices.getOverdueInvoiceTotal())
+                        .build());
+
+        shortCutList.add(
+                InvoiceSummary.builder()
+                        .title("Paid Invoices")
+                        .image("wallet")
+                        .amount(allInvoices.getPaidInvoiceTotal())
+                        .build());
+
+        return AuthenticationResponse.builder()
+                .firstname(user.getFirstName())
+                .lastname(user.getLastName())
+                .phoneNumber(user.getPhoneNumber())
+                .address(user.getCompanyAddress())
+                .postCode(user.getPostCode())
+                .country(user.getCountry())
+                .companyLogo(user.getCompanyLogo())
+                .companyName(user.getCompanyName())
+                .extraData(shortCutList)
+                .recentInvoice(recentInvoice)
+                .status(HttpStatus.OK.value())
+                .build();
+
+    }
+
 
 }
